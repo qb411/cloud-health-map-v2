@@ -1,0 +1,14 @@
+{
+  "name": "cloud-status-processor",
+  "version": "1.0.0",
+  "description": "RSS feed processor for cloud status data",
+  "main": "update-status.js",
+  "scripts": {
+    "start": "node update-status.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.38.0",
+    "node-fetch": "^3.3.2",
+    "xml2js": "^0.6.2"
+  }
+}
