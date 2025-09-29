@@ -71,8 +71,7 @@ const MapContainer = ({
   };
 
   const handleResetView = () => {
-    updateMapCenter([30, 10]);
-    updateMapZoom(2);
+    updateMapZoom(3);
     setShouldReset(true);
   };
 
@@ -105,7 +104,7 @@ const MapContainer = ({
         {/* Map controller for programmatic control */}
         <MapController
           center={[30, 10]}
-          zoom={2}
+          zoom={3}
           shouldReset={shouldReset}
           onResetComplete={handleResetComplete}
         />

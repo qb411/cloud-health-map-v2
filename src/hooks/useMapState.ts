@@ -1,10 +1,22 @@
 import { useState, useCallback, useEffect } from 'react';
 import { MapState, LOCAL_STORAGE_KEYS, DEFAULT_CONFIG } from '../types';
 
+// Get responsive zoom level based on screen size
+const getResponsiveZoom = () => {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  
+  // For high-res displays (1440p and above), use higher zoom
+  if (width >= 2560 || height >= 1440) return 4; // 4K/1440p+
+  if (width >= 1920 || height >= 1080) return 3; // 1080p+
+  return DEFAULT_CONFIG.defaultMapZoom; // Default for smaller screens
+};
+
+
 export const useMapState = () => {
   const [mapState, setMapState] = useState<MapState>({
     center: DEFAULT_CONFIG.defaultMapCenter,
-    zoom: DEFAULT_CONFIG.defaultMapZoom,
+    zoom: getResponsiveZoom(),
     selectedRegionId: undefined,
   });
 
@@ -54,7 +66,7 @@ export const useMapState = () => {
   const resetMapState = useCallback(() => {
     setMapState({
       center: DEFAULT_CONFIG.defaultMapCenter,
-      zoom: DEFAULT_CONFIG.defaultMapZoom,
+      zoom: getResponsiveZoom(),
       selectedRegionId: undefined,
     });
   }, []);

@@ -72,7 +72,7 @@ export const DEFAULT_CONFIG: DashboardConfig = {
   enableAutoRefresh: true,
   enableMockData: false,
   defaultMapCenter: [30, 10], // Better centered on main continents (Europe/Africa/Asia)
-  defaultMapZoom: 2,
+  defaultMapZoom: 3, // Increased from 2 to 3 for better initial display on high-res screens
   enableFullScreen: true,
   enableKeyboardNavigation: true,
 };
