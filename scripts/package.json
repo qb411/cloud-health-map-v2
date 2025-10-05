@@ -1,14 +1,23 @@
 {
-  "name": "cloud-status-processor",
+  "name": "cloud-status-rss-processor",
   "version": "1.0.0",
-  "description": "RSS feed processor for cloud status data",
+  "description": "RSS feed processor for cloud provider status updates",
   "main": "update-status.js",
+  "type": "module",
   "scripts": {
-    "start": "node update-status.js"
+    "start": "node update-status.js",
+    "test": "node test-feeds.js",
+    "test:supabase": "node test-supabase.js",
+    "test:github": "node test-github-actions.js",
+    "status": "node check-rss-status.js"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.38.0",
+    "@supabase/supabase-js": "^2.39.0",
+    "xml2js": "^0.6.2",
     "node-fetch": "^3.3.2",
-    "xml2js": "^0.6.2"
+    "dotenv": "^16.3.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

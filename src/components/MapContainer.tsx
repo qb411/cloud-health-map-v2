@@ -6,7 +6,7 @@ import { MAP_ZOOM_LEVELS, PROVIDER_COLORS } from '../types';
 import { useMapState } from '../hooks';
 import { useTheme } from '../contexts/ThemeContext';
 import { ALL_REGIONS } from '../data/regions';
-import { statusService } from '../services/StatusService';
+import { mockStatusService } from '../services/mockStatusService';
 import MapEventHandler from './MapEventHandler';
 import MapController from './MapController';
 import ProviderIconMarker from './ProviderIconMarker';
@@ -26,20 +26,8 @@ const MapContainer = ({
 
   // Load region statuses on mount
   useEffect(() => {
-    const loadStatuses = async () => {
-      try {
-        const statuses = await statusService.getAllStatuses(ALL_REGIONS);
-        setRegionStatuses(statuses);
-      } catch (error) {
-        console.error("Failed to load region statuses:", error);
-      }
-    };
-    
-    loadStatuses();
-    
-    // Set up auto-refresh every 15 minutes
-    const interval = setInterval(loadStatuses, 15 * 60 * 1000);
-    return () => clearInterval(interval);
+    const statuses = mockStatusService.getAllStatuses(ALL_REGIONS);
+    setRegionStatuses(statuses);
   }, []);
 
   // Filter regions based on selected provider
@@ -71,6 +59,7 @@ const MapContainer = ({
   };
 
   const handleResetView = () => {
+    updateMapCenter([30, 10]);
     updateMapZoom(3);
     setShouldReset(true);
   };
@@ -79,12 +68,36 @@ const MapContainer = ({
     setShouldReset(false);
   };
 
+  // Debug logging
+  console.log('MapContainer render:', { 
+    filteredRegions: filteredRegions.length, 
+    mapState, 
+    selectedProvider 
+  });
+
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div 
+      className="map-wrapper"
+      style={{ 
+        position: 'relative', 
+        width: '100%', 
+        height: '100%',
+        minHeight: '500px',
+        display: 'flex',
+        flexDirection: 'column'
+      }}
+    >
       <LeafletMapContainer
         center={mapState.center}
         zoom={mapState.zoom}
-        style={{ width: '100%', height: '100%', zIndex: 0, borderRadius: '8px' }}
+        style={{ 
+          width: '100%', 
+          height: '100%', 
+          flex: 1,
+          minHeight: '500px',
+          zIndex: 0, 
+          borderRadius: '8px' 
+        }}
         zoomControl={true}
         scrollWheelZoom={true}
         doubleClickZoom={true}
@@ -93,6 +106,24 @@ const MapContainer = ({
         maxZoom={MAP_ZOOM_LEVELS.city}
         worldCopyJump={false}
         attributionControl={true}
+        maxBounds={[[-85, -180], [85, 180]]}
+        maxBoundsViscosity={1.0}
+        whenCreated={(mapInstance) => {
+          console.log('Leaflet map created:', mapInstance);
+          // Force map to invalidate size after creation and on window resize
+          const invalidateSize = () => {
+            mapInstance.invalidateSize();
+          };
+          
+          setTimeout(invalidateSize, 100);
+          setTimeout(invalidateSize, 500);
+          setTimeout(invalidateSize, 1000);
+          
+          // Add resize listener
+          window.addEventListener('resize', invalidateSize);
+          
+          // Cleanup function would go here if this was a useEffect
+        }}
       >
         {/* Map event handlers */}
         <MapEventHandler

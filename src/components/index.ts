@@ -7,3 +7,4 @@ export { default as RegionOverlay } from './RegionOverlay';
 export { default as RegionMarker } from './RegionMarker';
 export { default as ProviderIconMarker } from './ProviderIconMarker';
 export { default as ProviderFilter } from './ProviderFilter';
+export { default as AdBanner } from './AdBanner';

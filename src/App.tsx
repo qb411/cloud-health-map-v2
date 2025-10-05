@@ -4,6 +4,8 @@ import { CloudRegion } from './types';
 import { useKeyboardNavigation } from './hooks';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import ThemeToggle from './components/ThemeToggle';
+import AdBanner from './components/AdBanner';
+import SupabaseConnectionTest from './components/SupabaseConnectionTest';
 
 const Dashboard = () => {
   const { theme } = useTheme();
@@ -54,11 +56,17 @@ const Dashboard = () => {
   const styles = getThemeStyles();
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: styles.background }}>
+    <div style={{ 
+      minHeight: '100vh', 
+      backgroundColor: styles.background,
+      display: 'flex',
+      flexDirection: 'column'
+    }}>
       <header style={{ 
         backgroundColor: styles.headerBg, 
         boxShadow: styles.headerShadow, 
-        borderBottom: `1px solid ${styles.headerBorder}` 
+        borderBottom: `1px solid ${styles.headerBorder}`,
+        flexShrink: 0
       }}>
         <div style={{ 
           maxWidth: '1280px', 
@@ -94,8 +102,22 @@ const Dashboard = () => {
         </div>
       </header>
       
-      <main style={{ flex: 1 }}>
-        <div style={{ height: 'calc(100vh - 80px)' }}>
+      <main style={{ 
+        position: 'relative',
+        width: '100%',
+        height: 'calc(100vh - 73px)', // Subtract header height
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
+        <div style={{ 
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: '90px', // Leave space for ad banner
+          width: '100%',
+          height: 'calc(100% - 90px)'
+        }}>
           <MapContainer
             regions={regions}
             selectedRegion={selectedRegion}
@@ -103,7 +125,21 @@ const Dashboard = () => {
             onMapClick={handleMapClick}
           />
         </div>
+        
+        {/* Advertisement Banner */}
+        <div style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: '90px'
+        }}>
+          <AdBanner height={90} />
+        </div>
       </main>
+      
+      {/* Temporary Supabase Connection Test */}
+      <SupabaseConnectionTest />
     </div>
   );
 };

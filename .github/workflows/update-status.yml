@@ -1,11 +1,19 @@
 name: Update Cloud Status Data
 
 on:
+  # Run every 15 minutes (comment out this section to disable)
   schedule:
-    # Run every 15 minutes
     - cron: '*/15 * * * *'
-  # Allow manual trigger for testing
+  
+  # Allow manual triggering for testing
   workflow_dispatch:
+  
+  # Run on push to main branch for testing
+  push:
+    branches: [ main, master ]
+    paths: 
+      - 'scripts/**'
+      - '.github/workflows/update-status.yml'
 
 jobs:
   update-status:
@@ -19,16 +27,23 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: 'scripts/package-lock.json'
         
     - name: Install dependencies
       run: |
         cd scripts
-        npm install
+        npm ci
         
-    - name: Process RSS feeds and update database
+    - name: Run RSS feed processor
       env:
         SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-        SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       run: |
         cd scripts
         node update-status.js
+        
+    - name: Processing completed
+      run: |
+        echo "✅ RSS feed processing completed"
+        echo "📊 Check Supabase dashboard for updated data"

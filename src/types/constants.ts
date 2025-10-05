@@ -70,7 +70,7 @@ export const SEVERITY_COLORS = {
 export const PROVIDER_COLORS = {
   aws: '#FF8C00',      // AWS Orange (distinct from status colors)
   azure: '#0078D4',    // Microsoft Azure Blue (official Azure brand color)
-  gcp: '#06B6D4',      // Cyan/Teal (distinct from Azure blue and all status colors)
+  gcp: '#EC4899',      // Magenta/Pink (completely distinct from all other colors)
   oci: '#8B5CF6'       // Purple (distinct from Oracle red to avoid status conflict)
 } as const;
 
