@@ -4,21 +4,33 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+console.log('Supabase config check:', { 
+  hasUrl: !!supabaseUrl, 
+  hasKey: !!supabaseAnonKey,
+  url: supabaseUrl ? `${supabaseUrl.substring(0, 30)}...` : 'MISSING'
+});
+
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables. Please check your .env file.');
+  console.error('Missing Supabase environment variables:', {
+    VITE_SUPABASE_URL: supabaseUrl || 'MISSING',
+    VITE_SUPABASE_ANON_KEY: supabaseAnonKey ? 'PRESENT' : 'MISSING'
+  });
+  // Don't throw error, just log and continue with mock data
 }
 
-// Create Supabase client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: false, // We don't need user authentication for this public dashboard
-  },
-  realtime: {
-    params: {
-      eventsPerSecond: 10, // Limit real-time events for performance
-    },
-  },
-});
+// Create Supabase client (with fallback for missing env vars)
+export const supabase = supabaseUrl && supabaseAnonKey 
+  ? createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: false, // We don't need user authentication for this public dashboard
+      },
+      realtime: {
+        params: {
+          eventsPerSecond: 10, // Limit real-time events for performance
+        },
+      },
+    })
+  : null;
 
 // Database types (generated from schema)
 export interface CloudStatus {
@@ -62,6 +74,11 @@ export class SupabaseService {
    * Get current status for all regions
    */
   static async getCurrentRegionStatus(): Promise<RegionStatusCurrent[]> {
+    if (!supabase) {
+      console.warn('Supabase not configured, returning empty data');
+      return [];
+    }
+
     const { data, error } = await supabase
       .from('region_status_current')
       .select('*')
@@ -70,7 +87,7 @@ export class SupabaseService {
 
     if (error) {
       console.error('Error fetching current region status:', error);
-      throw error;
+      return [];
     }
 
     return data || [];
@@ -80,6 +97,11 @@ export class SupabaseService {
    * Get current status for a specific provider
    */
   static async getProviderStatus(provider: string): Promise<RegionStatusCurrent[]> {
+    if (!supabase) {
+      console.warn('Supabase not configured, returning empty data');
+      return [];
+    }
+
     const { data, error } = await supabase
       .from('region_status_current')
       .select('*')
@@ -98,6 +120,11 @@ export class SupabaseService {
    * Get detailed incidents for a specific region
    */
   static async getRegionIncidents(provider: string, regionId: string): Promise<CloudStatus[]> {
+    if (!supabase) {
+      console.warn('Supabase not configured, returning empty data');
+      return [];
+    }
+
     const { data, error } = await supabase
       .from('cloud_status')
       .select('*')
@@ -123,6 +150,11 @@ export class SupabaseService {
     regionId?: string, 
     hours: number = 24
   ): Promise<CloudStatus[]> {
+    if (!supabase) {
+      console.warn('Supabase not configured, returning empty data');
+      return [];
+    }
+
     let query = supabase
       .from('cloud_status')
       .select('*')
@@ -154,6 +186,11 @@ export class SupabaseService {
     callback: (payload: any) => void,
     provider?: string
   ) {
+    if (!supabase) {
+      console.warn('Supabase not configured, cannot subscribe to updates');
+      return null;
+    }
+
     const channel = supabase
       .channel('region-status-changes')
       .on(
@@ -174,6 +211,9 @@ export class SupabaseService {
    * Unsubscribe from real-time updates
    */
   static unsubscribeFromStatusUpdates(channel: any) {
+    if (!supabase || !channel) {
+      return;
+    }
     return supabase.removeChannel(channel);
   }
 
@@ -181,6 +221,11 @@ export class SupabaseService {
    * Test database connection
    */
   static async testConnection(): Promise<boolean> {
+    if (!supabase) {
+      console.warn('Supabase not configured');
+      return false;
+    }
+
     try {
       const { error } = await supabase
         .from('region_status_current')
