@@ -12,11 +12,11 @@ export const AWS_REGIONS: CloudRegion[] = [
     id: 'us-east-1',
     name: 'US East (N. Virginia)',
     provider: 'aws' as CloudProvider,
-    coordinates: { latitude: 38.13, longitude: -78.45 },
+    coordinates: { latitude: 39.0458, longitude: -77.5081 },
     boundaries: {
       type: 'Polygon',
       coordinates: [[
-        [-80.0, 36.5], [-76.0, 36.5], [-76.0, 40.0], [-80.0, 40.0], [-80.0, 36.5]
+        [-78.0, 38.5], [-77.0, 38.5], [-77.0, 39.5], [-78.0, 39.5], [-78.0, 38.5]
       ]]
     },
     services: ['EC2', 'S3', 'RDS', 'Lambda', 'CloudFront']
@@ -25,11 +25,11 @@ export const AWS_REGIONS: CloudRegion[] = [
     id: 'us-east-2',
     name: 'US East (Ohio)',
     provider: 'aws' as CloudProvider,
-    coordinates: { latitude: 40.42, longitude: -82.91 },
+    coordinates: { latitude: 39.9612, longitude: -82.9988 },
     boundaries: {
       type: 'Polygon',
       coordinates: [[
-        [-84.5, 38.5], [-81.0, 38.5], [-81.0, 42.0], [-84.5, 42.0], [-84.5, 38.5]
+        [-83.5, 39.0], [-82.5, 39.0], [-82.5, 40.5], [-83.5, 40.5], [-83.5, 39.0]
       ]]
     },
     services: ['EC2', 'S3', 'RDS', 'Lambda']
@@ -38,11 +38,11 @@ export const AWS_REGIONS: CloudRegion[] = [
     id: 'us-west-1',
     name: 'US West (N. California)',
     provider: 'aws' as CloudProvider,
-    coordinates: { latitude: 37.35, longitude: -121.96 },
+    coordinates: { latitude: 37.4419, longitude: -122.1430 },
     boundaries: {
       type: 'Polygon',
       coordinates: [[
-        [-124.0, 35.0], [-119.0, 35.0], [-119.0, 39.5], [-124.0, 39.5], [-124.0, 35.0]
+        [-123.0, 36.5], [-121.5, 36.5], [-121.5, 38.0], [-123.0, 38.0], [-123.0, 36.5]
       ]]
     },
     services: ['EC2', 'S3', 'RDS', 'Lambda']
@@ -51,11 +51,11 @@ export const AWS_REGIONS: CloudRegion[] = [
     id: 'us-west-2',
     name: 'US West (Oregon)',
     provider: 'aws' as CloudProvider,
-    coordinates: { latitude: 45.87, longitude: -119.69 },
+    coordinates: { latitude: 45.8696, longitude: -119.6880 },
     boundaries: {
       type: 'Polygon',
       coordinates: [[
-        [-125.0, 42.0], [-116.0, 42.0], [-116.0, 49.0], [-125.0, 49.0], [-125.0, 42.0]
+        [-120.5, 45.0], [-119.0, 45.0], [-119.0, 46.5], [-120.5, 46.5], [-120.5, 45.0]
       ]]
     },
     services: ['EC2', 'S3', 'RDS', 'Lambda', 'CloudFront']
@@ -64,11 +64,11 @@ export const AWS_REGIONS: CloudRegion[] = [
     id: 'eu-west-1',
     name: 'Europe (Ireland)',
     provider: 'aws' as CloudProvider,
-    coordinates: { latitude: 53.41, longitude: -8.24 },
+    coordinates: { latitude: 53.3498, longitude: -6.2603 },
     boundaries: {
       type: 'Polygon',
       coordinates: [[
-        [-10.5, 51.5], [-5.5, 51.5], [-5.5, 55.5], [-10.5, 55.5], [-10.5, 51.5]
+        [-7.0, 52.8], [-5.8, 52.8], [-5.8, 54.0], [-7.0, 54.0], [-7.0, 52.8]
       ]]
     },
     services: ['EC2', 'S3', 'RDS', 'Lambda', 'CloudFront']
@@ -120,11 +120,11 @@ export const AZURE_REGIONS: CloudRegion[] = [
     id: 'eastus',
     name: 'East US',
     provider: 'azure' as CloudProvider,
-    coordinates: { latitude: 37.36, longitude: -79.43 },
+    coordinates: { latitude: 37.5407, longitude: -77.4360 },
     boundaries: {
       type: 'Polygon',
       coordinates: [[
-        [-81.0, 35.5], [-77.5, 35.5], [-77.5, 39.0], [-81.0, 39.0], [-81.0, 35.5]
+        [-78.0, 37.0], [-76.9, 37.0], [-76.9, 38.1], [-78.0, 38.1], [-78.0, 37.0]
       ]]
     },
     services: ['Virtual Machines', 'Storage', 'SQL Database', 'Functions']
@@ -133,11 +133,11 @@ export const AZURE_REGIONS: CloudRegion[] = [
     id: 'westus2',
     name: 'West US 2',
     provider: 'azure' as CloudProvider,
-    coordinates: { latitude: 47.23, longitude: -119.85 },
+    coordinates: { latitude: 47.2529, longitude: -119.8523 },
     boundaries: {
       type: 'Polygon',
       coordinates: [[
-        [-122.0, 45.5], [-117.0, 45.5], [-117.0, 49.0], [-122.0, 49.0], [-122.0, 45.5]
+        [-120.3, 46.8], [-119.4, 46.8], [-119.4, 47.7], [-120.3, 47.7], [-120.3, 46.8]
       ]]
     },
     services: ['Virtual Machines', 'Storage', 'SQL Database', 'Functions']
@@ -176,11 +176,11 @@ export const GCP_REGIONS: CloudRegion[] = [
     id: 'us-central1',
     name: 'us-central1 (Iowa)',
     provider: 'gcp' as CloudProvider,
-    coordinates: { latitude: 41.26, longitude: -95.86 },
+    coordinates: { latitude: 41.2619, longitude: -95.8608 },
     boundaries: {
       type: 'Polygon',
       coordinates: [[
-        [-97.0, 40.0], [-94.0, 40.0], [-94.0, 43.0], [-97.0, 43.0], [-97.0, 40.0]
+        [-96.2, 40.8], [-95.5, 40.8], [-95.5, 41.7], [-96.2, 41.7], [-96.2, 40.8]
       ]]
     },
     services: ['Compute Engine', 'Cloud Storage', 'Cloud SQL', 'Cloud Functions']
@@ -189,11 +189,11 @@ export const GCP_REGIONS: CloudRegion[] = [
     id: 'us-east1',
     name: 'us-east1 (South Carolina)',
     provider: 'gcp' as CloudProvider,
-    coordinates: { latitude: 33.84, longitude: -81.16 },
+    coordinates: { latitude: 33.1960, longitude: -79.9760 },
     boundaries: {
       type: 'Polygon',
       coordinates: [[
-        [-83.0, 32.0], [-79.0, 32.0], [-79.0, 35.5], [-83.0, 35.5], [-83.0, 32.0]
+        [-80.5, 32.7], [-79.5, 32.7], [-79.5, 33.7], [-80.5, 33.7], [-80.5, 32.7]
       ]]
     },
     services: ['Compute Engine', 'Cloud Storage', 'Cloud SQL', 'Cloud Functions']
@@ -202,11 +202,11 @@ export const GCP_REGIONS: CloudRegion[] = [
     id: 'europe-west1',
     name: 'europe-west1 (Belgium)',
     provider: 'gcp' as CloudProvider,
-    coordinates: { latitude: 50.44, longitude: 3.81 },
+    coordinates: { latitude: 50.4501, longitude: 3.8200 },
     boundaries: {
       type: 'Polygon',
       coordinates: [[
-        [2.5, 49.5], [6.0, 49.5], [6.0, 51.5], [2.5, 51.5], [2.5, 49.5]
+        [3.3, 50.0], [4.3, 50.0], [4.3, 50.9], [3.3, 50.9], [3.3, 50.0]
       ]]
     },
     services: ['Compute Engine', 'Cloud Storage', 'Cloud SQL', 'Cloud Functions']
@@ -215,11 +215,11 @@ export const GCP_REGIONS: CloudRegion[] = [
     id: 'asia-east1',
     name: 'asia-east1 (Taiwan)',
     provider: 'gcp' as CloudProvider,
-    coordinates: { latitude: 24.05, longitude: 120.67 },
+    coordinates: { latitude: 24.0518, longitude: 120.5161 },
     boundaries: {
       type: 'Polygon',
       coordinates: [[
-        [120.0, 22.0], [122.0, 22.0], [122.0, 25.5], [120.0, 25.5], [120.0, 22.0]
+        [120.0, 23.5], [121.0, 23.5], [121.0, 24.5], [120.0, 24.5], [120.0, 23.5]
       ]]
     },
     services: ['Compute Engine', 'Cloud Storage', 'Cloud SQL']
