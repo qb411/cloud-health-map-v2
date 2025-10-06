@@ -19,7 +19,7 @@ const MapContainer = ({
   const { theme } = useTheme();
   const [shouldReset, setShouldReset] = useState(false);
   const [regionStatuses, setRegionStatuses] = useState<Map<string, ServiceStatus>>(new Map());
-  const [selectedProvider, setSelectedProvider] = useState<CloudProvider | 'all'>('aws'); // Start with AWS only
+  const [selectedProvider, setSelectedProvider] = useState<CloudProvider | 'all'>('all'); // Start with all providers
 
   // Load region statuses on mount
   useEffect(() => {
