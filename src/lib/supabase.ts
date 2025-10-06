@@ -154,7 +154,7 @@ export class SupabaseService {
     callback: (payload: any) => void,
     provider?: string
   ) {
-    let channel = supabase
+    const channel = supabase
       .channel('region-status-changes')
       .on(
         'postgres_changes',
@@ -182,7 +182,7 @@ export class SupabaseService {
    */
   static async testConnection(): Promise<boolean> {
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('region_status_current')
         .select('count')
         .limit(1);
