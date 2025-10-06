@@ -6,7 +6,7 @@ import { MAP_ZOOM_LEVELS, PROVIDER_COLORS } from '../types';
 import { useMapState } from '../hooks';
 import { useTheme } from '../contexts/ThemeContext';
 import { ALL_REGIONS } from '../data/regions';
-import { mockStatusService } from '../services/mockStatusService';
+import { SupabaseService } from '../lib/supabase';
 import MapEventHandler from './MapEventHandler';
 import MapController from './MapController';
 import ProviderIconMarker from './ProviderIconMarker';
@@ -23,8 +23,30 @@ const MapContainer = ({
 
   // Load region statuses on mount
   useEffect(() => {
-    const statuses = mockStatusService.getAllStatuses(ALL_REGIONS);
-    setRegionStatuses(statuses);
+    const loadRegionStatuses = async () => {
+      try {
+        const supabaseData = await SupabaseService.getCurrentRegionStatus();
+        const statusMap = new Map<string, ServiceStatus>();
+        
+        // Convert Supabase data to status map
+        supabaseData.forEach(region => {
+          statusMap.set(region.region_id, region.overall_status as ServiceStatus);
+        });
+        
+        setRegionStatuses(statusMap);
+        console.log('✅ Loaded real status data from Supabase:', supabaseData.length, 'regions');
+      } catch (error) {
+        console.error('❌ Failed to load Supabase data, using fallback:', error);
+        // Fallback to operational status for all regions
+        const fallbackStatuses = new Map<string, ServiceStatus>();
+        ALL_REGIONS.forEach(region => {
+          fallbackStatuses.set(region.id, 'operational');
+        });
+        setRegionStatuses(fallbackStatuses);
+      }
+    };
+    
+    loadRegionStatuses();
   }, []);
 
   // Filter regions based on selected provider
