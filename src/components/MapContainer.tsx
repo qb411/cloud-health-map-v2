@@ -105,21 +105,8 @@ const MapContainer = ({
         attributionControl={true}
         maxBounds={[[-85, -180], [85, 180]]}
         maxBoundsViscosity={1.0}
-        whenReady={(mapInstance: any) => {
-          console.log('Leaflet map created:', mapInstance);
-          // Force map to invalidate size after creation and on window resize
-          const invalidateSize = () => {
-            mapInstance.invalidateSize();
-          };
-          
-          setTimeout(invalidateSize, 100);
-          setTimeout(invalidateSize, 500);
-          setTimeout(invalidateSize, 1000);
-          
-          // Add resize listener
-          window.addEventListener('resize', invalidateSize);
-          
-          // Cleanup function would go here if this was a useEffect
+        whenReady={() => {
+          console.log('Leaflet map ready');
         }}
       >
         {/* Map event handlers */}
