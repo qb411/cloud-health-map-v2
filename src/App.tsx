@@ -82,7 +82,7 @@ const Dashboard = () => {
             color: styles.titleColor,
             margin: 0
           }}>
-            Cloud Status Dashboard
+            Cloud Health Map
           </h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <div style={{ fontSize: '14px', color: styles.textColor }}>
