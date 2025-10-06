@@ -2,6 +2,12 @@
 
 A production-ready real-time visualization dashboard that displays the health status of cloud provider services across global regions on an interactive world map. The system monitors public status feeds from major cloud providers and displays service health through color-coded regions with historical tracking and trend analysis.
 
+## 🌐 Live Demo
+
+**🚀 [View Live Dashboard](https://qb411.github.io/cloud-health-map-v2/)**
+
+Experience the interactive cloud status map with real-time data from AWS, Azure, GCP, and OCI regions worldwide.
+
 ## 🚀 Current Features (Implemented)
 
 ### **Interactive Map Dashboard**
@@ -183,6 +189,8 @@ npm install
 2. **Source**: Select "GitHub Actions"
 3. **Save settings**
 4. **Site URL**: `https://yourusername.github.io/cloud-health-map-v2`
+
+**Live Example**: [https://qb411.github.io/cloud-health-map-v2/](https://qb411.github.io/cloud-health-map-v2/)
 
 ### 5. Configure RSS Processing (Optional)
 **RSS processing runs every 15 minutes by default**. To disable:
