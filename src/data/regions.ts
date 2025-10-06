@@ -51,11 +51,11 @@ export const AWS_REGIONS: CloudRegion[] = [
     id: 'us-west-2',
     name: 'US West (Oregon)',
     provider: 'aws' as CloudProvider,
-    coordinates: { latitude: 45.8696, longitude: -119.6880 },
+    coordinates: { latitude: 45.5152, longitude: -122.6784 },
     boundaries: {
       type: 'Polygon',
       coordinates: [[
-        [-120.5, 45.0], [-119.0, 45.0], [-119.0, 46.5], [-120.5, 46.5], [-120.5, 45.0]
+        [-123.5, 45.0], [-121.5, 45.0], [-121.5, 46.0], [-123.5, 46.0], [-123.5, 45.0]
       ]]
     },
     services: ['EC2', 'S3', 'RDS', 'Lambda', 'CloudFront']
