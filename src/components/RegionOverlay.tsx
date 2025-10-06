@@ -11,7 +11,7 @@ const RegionOverlay = ({ region, status, onClick }: RegionOverlayProps) => {
   const providerColor = PROVIDER_COLORS[region.provider];
   
   // Create polygon positions from GeoJSON coordinates
-  const positions = region.boundaries.coordinates[0].map(coord => [coord[1], coord[0]] as [number, number]);
+  const positions = region.boundaries?.coordinates?.[0]?.map(coord => [coord[1], coord[0]] as [number, number]) || [];
   
   const handleClick = () => {
     onClick(region);

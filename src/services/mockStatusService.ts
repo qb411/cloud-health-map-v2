@@ -11,8 +11,6 @@ export class MockStatusService {
   private generateInitialStatuses() {
     // Generate some realistic status distribution
     // 85% operational, 10% degraded, 5% outage
-    const statuses: ServiceStatus[] = ['operational', 'degraded', 'outage'];
-    const weights = [0.85, 0.10, 0.05];
     
     // For demo purposes, we'll have some regions with issues
     const problematicRegions = [
@@ -57,9 +55,14 @@ export class MockStatusService {
 
   // Simulate random status changes for demo
   simulateStatusChanges(regions: CloudRegion[]) {
+    if (regions.length === 0) return;
+    
     const randomRegion = regions[Math.floor(Math.random() * regions.length)];
+    if (!randomRegion) return;
+    
     const statuses: ServiceStatus[] = ['operational', 'degraded', 'outage'];
     const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+    if (!randomStatus) return;
     
     this.updateRegionStatus(randomRegion.id, randomStatus);
     

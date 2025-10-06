@@ -6,7 +6,7 @@ interface ResponsiveMapWrapperProps {
   className?: string;
 }
 
-const ResponsiveMapWrapper = ({ children, className = '' }: ResponsiveMapWrapperProps) => {
+const ResponsiveMapWrapper = ({ children }: ResponsiveMapWrapperProps) => {
   const [screenSize, setScreenSize] = useState<'mobile' | 'tablet' | 'desktop' | 'tv'>('desktop');
 
   useEffect(() => {
@@ -34,22 +34,7 @@ const ResponsiveMapWrapper = ({ children, className = '' }: ResponsiveMapWrapper
     return () => window.removeEventListener('resize', updateScreenSize);
   }, []);
 
-  const getResponsiveClasses = () => {
-    const baseClasses = 'w-full h-full';
-    
-    switch (screenSize) {
-      case 'tv':
-        return `${baseClasses} text-2xl`; // Larger text for TV displays
-      case 'desktop':
-        return `${baseClasses} text-base`;
-      case 'tablet':
-        return `${baseClasses} text-sm`;
-      case 'mobile':
-        return `${baseClasses} text-xs`;
-      default:
-        return baseClasses;
-    }
-  };
+
 
   const getResponsiveStyles = () => {
     const baseStyles = { width: '100%', height: '100%' };

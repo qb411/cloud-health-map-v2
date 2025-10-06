@@ -10,10 +10,7 @@ import { mockStatusService } from '../services/mockStatusService';
 import MapEventHandler from './MapEventHandler';
 import MapController from './MapController';
 import ProviderIconMarker from './ProviderIconMarker';
-import ProviderFilter from './ProviderFilter';
-
 const MapContainer = ({ 
-  regions, 
   selectedRegion, 
   onRegionClick,
   onMapClick 
@@ -108,7 +105,7 @@ const MapContainer = ({
         attributionControl={true}
         maxBounds={[[-85, -180], [85, 180]]}
         maxBoundsViscosity={1.0}
-        whenCreated={(mapInstance) => {
+        whenReady={(mapInstance: any) => {
           console.log('Leaflet map created:', mapInstance);
           // Force map to invalidate size after creation and on window resize
           const invalidateSize = () => {
