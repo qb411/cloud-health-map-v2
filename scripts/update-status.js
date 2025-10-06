@@ -387,7 +387,7 @@ async function storeIncidents(providerId, incidents) {
   const { data, error } = await supabase
     .from('cloud_status')
     .upsert(incidents, {
-      onConflict: 'provider,region_id,incident_id,created_at'
+      onConflict: 'provider,region_id,incident_id'
     });
 
   if (error) {
@@ -407,15 +407,26 @@ async function updateRegionSummaries() {
     // Get all unique provider/region combinations
     const { data: regions, error } = await supabase
       .from('cloud_status')
-      .select('provider, region_id, region_name')
-      .group('provider, region_id, region_name');
+      .select('provider, region_id, region_name');
 
     if (error) {
       throw error;
     }
 
-    // Update each region summary
+    // Deduplicate regions manually since Supabase JS doesn't have group()
+    const uniqueRegions = [];
+    const seen = new Set();
+    
     for (const region of regions || []) {
+      const key = `${region.provider}-${region.region_id}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        uniqueRegions.push(region);
+      }
+    }
+
+    // Update each region summary
+    for (const region of uniqueRegions) {
       const { error: updateError } = await supabase
         .rpc('update_region_status_summary', {
           p_provider: region.provider,
