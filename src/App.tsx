@@ -76,14 +76,41 @@ const Dashboard = () => {
           alignItems: 'center',
           justifyContent: 'space-between'
         }}>
-          <h1 style={{ 
-            fontSize: '24px', 
-            fontWeight: 'bold', 
-            color: styles.titleColor,
-            margin: 0
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '12px' 
           }}>
-            Cloud Health Map
-          </h1>
+            <div style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.3)',
+              border: '1px solid rgba(200, 200, 200, 0.4)',
+              borderRadius: '6px',
+              padding: '2px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 'calc(63px + 4px - 5px)',
+              height: 'calc(63px + 4px - 5px)',
+              overflow: 'hidden'
+            }}>
+              <img 
+                src="./logo.png" 
+                alt="Cloud Health Map Logo" 
+                style={{ 
+                  height: '63px', 
+                  width: 'auto' 
+                }} 
+              />
+            </div>
+            <h1 style={{ 
+              fontSize: '24px', 
+              fontWeight: 'bold', 
+              color: styles.titleColor,
+              margin: 0
+            }}>
+              Cloud Health Map
+            </h1>
+          </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <div style={{ fontSize: '14px', color: styles.textColor }}>
               Last updated: {new Date().toLocaleTimeString()}
