@@ -55,7 +55,7 @@ const SupabaseConnectionTest = () => {
         onClick={() => setIsExpanded(true)}
         style={{
           position: 'fixed',
-          bottom: '110px', // Above the ad banner
+          bottom: '20px', // Bottom positioning (ad banner disabled)
           left: '20px',
           width: '40px',
           height: '40px',
@@ -107,7 +107,7 @@ const SupabaseConnectionTest = () => {
   return (
     <div style={{
       position: 'fixed',
-      bottom: '110px', // Above the ad banner
+      bottom: '20px', // Bottom positioning (ad banner disabled)
       left: '20px',
       width: '300px',
       backgroundColor: 'white',

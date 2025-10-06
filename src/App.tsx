@@ -4,7 +4,7 @@ import { CloudRegion } from './types';
 import { useKeyboardNavigation } from './hooks';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import ThemeToggle from './components/ThemeToggle';
-import AdBanner from './components/AdBanner';
+// import AdBanner from './components/AdBanner'; // Commented out - will activate later
 import SupabaseConnectionTest from './components/SupabaseConnectionTest';
 
 const Dashboard = () => {
@@ -114,9 +114,9 @@ const Dashboard = () => {
           top: 0,
           left: 0,
           right: 0,
-          bottom: '90px', // Leave space for ad banner
+          bottom: 0, // Full height - no ad banner space reserved
           width: '100%',
-          height: 'calc(100% - 90px)'
+          height: '100%'
         }}>
           <MapContainer
             regions={regions}
@@ -126,7 +126,8 @@ const Dashboard = () => {
           />
         </div>
         
-        {/* Advertisement Banner */}
+        {/* Advertisement Banner - Commented out for now, will activate later */}
+        {/* 
         <div style={{
           position: 'absolute',
           bottom: 0,
@@ -136,6 +137,7 @@ const Dashboard = () => {
         }}>
           <AdBanner height={90} />
         </div>
+        */}
       </main>
       
       {/* Temporary Supabase Connection Test */}
