@@ -384,17 +384,33 @@ async function parseOCIFeed(jsonData, providerId) {
 async function storeIncidents(providerId, incidents) {
   if (incidents.length === 0) return;
 
-  const { data, error } = await supabase
-    .from('cloud_status')
-    .upsert(incidents, {
-      onConflict: 'provider,region_id,incident_id'
-    });
+  // Insert incidents one by one to handle conflicts properly
+  let successCount = 0;
+  let errorCount = 0;
 
-  if (error) {
-    throw new Error(`Failed to store ${providerId} incidents: ${error.message}`);
+  for (const incident of incidents) {
+    try {
+      const { error } = await supabase
+        .from('cloud_status')
+        .insert([incident]);
+
+      if (error) {
+        // If it's a duplicate, that's okay - just skip it
+        if (error.code === '23505') { // PostgreSQL unique violation
+          console.log(`⚠️  Skipping duplicate incident: ${incident.incident_id}`);
+        } else {
+          throw error;
+        }
+      } else {
+        successCount++;
+      }
+    } catch (error) {
+      console.warn(`⚠️  Failed to store incident ${incident.incident_id}:`, error.message);
+      errorCount++;
+    }
   }
 
-  console.log(`💾 Stored ${incidents.length} incidents for ${providerId}`);
+  console.log(`💾 Stored ${successCount} new incidents for ${providerId} (${errorCount} duplicates/errors skipped)`);
 }
 
 /**
