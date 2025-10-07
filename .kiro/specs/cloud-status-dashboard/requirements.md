@@ -89,3 +89,17 @@ This feature creates a visual dashboard that displays the real-time health statu
 3. WHEN fetching GCP status data THEN the system SHALL use the Google Cloud Status public feed
 4. WHEN fetching OCI status data THEN the system SHALL use the Oracle Cloud Infrastructure public status feed
 5. WHEN any cloud provider changes their public feed format THEN the system SHALL handle parsing errors gracefully and log appropriate warnings
+
+### Requirement 8
+
+**User Story:** As a multi-cloud user, I want to create custom region combinations across different cloud providers, so that I can monitor only the specific regions I use rather than all regions from a single provider.
+
+#### Acceptance Criteria
+
+1. WHEN using the region selector THEN the system SHALL provide both "Quick Select" mode for provider-based filtering and "Custom" mode for individual region selection
+2. WHEN in Custom mode THEN the system SHALL allow users to select any combination of regions from different cloud providers (e.g., us-east-1 from AWS + westeurope from Azure + us-central1 from GCP)
+3. WHEN selecting custom regions THEN the system SHALL provide a searchable interface organized by cloud provider with expand/collapse functionality
+4. WHEN searching for regions THEN the system SHALL filter regions by name or region ID in real-time
+5. WHEN managing custom selections THEN the system SHALL provide "Select All" and "Clear All" bulk actions for convenience
+6. WHEN custom regions are selected THEN the system SHALL display the count of selected regions in the collapsed selector state
+7. WHEN switching between Quick Select and Custom modes THEN the system SHALL maintain the appropriate selection state for each mode

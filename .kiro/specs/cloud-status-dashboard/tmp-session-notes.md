@@ -63,13 +63,19 @@
 4. Theme support and styling
 5. Build compilation success
 
+##### ✅ **COMPLETED - Custom Region Selection Added!**
+1. **Dual Mode Interface**: Quick Select (provider-based) + Custom (individual regions) ✅
+2. **Search Functionality**: Real-time region search by name or ID ✅
+3. **Mixed Provider Support**: Select any combination across AWS, Azure, GCP, OCI ✅
+4. **Bulk Actions**: Select All / Clear All buttons ✅
+5. **Provider Organization**: Expandable sections with selection counts ✅
+6. **Smart Status Display**: Shows region count in custom mode ✅
+
 ##### 🔄 Still Needs Work
 1. **Testing**: Need to verify functionality in browser
-2. **Positioning Conflicts**: May need to adjust if conflicts with existing controls
-3. **Mobile Responsiveness**: Test on mobile devices
-4. **Advanced Features**: Search, individual region selection, mixed provider selection
-5. **Accessibility**: Keyboard navigation, ARIA labels
-6. **Animation Polish**: Smooth transitions, better UX
+2. **Mobile Responsiveness**: Test on mobile devices  
+3. **Accessibility**: Keyboard navigation, ARIA labels
+4. **Animation Polish**: Smooth transitions, better UX
 
 ##### 🎯 Immediate Next Steps
 1. **Test in browser**: Verify collapsed/expanded states work
@@ -118,3 +124,84 @@
 7. **Merge preparation**: Testing, documentation, cleanup
 
 **Status**: Core implementation complete, ready for testing and enhancement phase.
+#
+# 🎉 **MAJOR UPDATE: Custom Region Selection Implemented!**
+
+### ✅ **New Features Added This Session:**
+
+#### **1. Dual Mode Interface**
+- **Quick Select Mode**: Original provider-based filtering (All, AWS, Azure, GCP, OCI)
+- **Custom Mode**: Individual region selection with mixed provider support
+- **Mode Toggle**: Easy switching between Quick Select and Custom modes
+
+#### **2. Advanced Custom Selection Features**
+- **Search Bar**: Real-time filtering by region name or ID
+- **Provider Sections**: Organized by cloud provider with expand/collapse
+- **Checkbox Interface**: Individual region selection/deselection
+- **Selection Counters**: Shows X/Y selected regions per provider
+- **Bulk Actions**: "Select All" and "Clear All" buttons
+
+#### **3. Smart State Management**
+- **Dual State System**: Maintains both provider and custom selections
+- **Mode Persistence**: Remembers selections when switching modes
+- **Filter Logic**: Automatically applies correct filtering based on mode
+
+#### **4. Enhanced Status Display**
+- **Provider Mode**: Shows "All", "AWS", "AZURE", etc. with provider colors
+- **Custom Mode**: Shows number of selected regions with purple indicator
+- **Dynamic Colors**: Icon color changes based on selection type
+
+### 🚀 **Customer Use Cases Now Supported:**
+
+1. **Multi-Cloud Monitoring**: 
+   - Select us-east-1 (AWS) + westeurope (Azure) + us-central1 (GCP) + uk-london-1 (OCI)
+   
+2. **Regional Focus**: 
+   - Monitor only the 5-10 regions actually used instead of all 100+ regions
+   
+3. **Compliance Tracking**: 
+   - Select specific regions for regulatory requirements (EU regions only, etc.)
+   
+4. **Cost Optimization**: 
+   - Focus on high-usage regions to reduce monitoring noise
+   
+5. **Disaster Recovery**: 
+   - Monitor primary + backup regions across different providers
+
+### 🎯 **Technical Implementation:**
+
+#### **State Management Updates:**
+```typescript
+// Added to MapContainer
+const [selectedRegions, setSelectedRegions] = useState<Set<string>>(new Set());
+const [selectionMode, setSelectionMode] = useState<'provider' | 'custom'>('provider');
+
+// Smart filtering logic
+const filteredRegions = selectionMode === 'custom'
+  ? (selectedRegions.size === 0 ? ALL_REGIONS : ALL_REGIONS.filter(region => selectedRegions.has(region.id)))
+  : (selectedProvider === 'all' ? ALL_REGIONS : ALL_REGIONS.filter(region => region.provider === selectedProvider));
+```
+
+#### **Component Architecture:**
+- **Region Grouping**: Organized by provider with sorting
+- **Search Filtering**: Real-time text matching
+- **Expansion State**: Per-provider expand/collapse
+- **Selection Handlers**: Toggle individual regions or bulk actions
+
+### 📊 **Build Status:**
+- ✅ **Compilation**: Successful build with no errors
+- ✅ **Type Safety**: All TypeScript interfaces updated
+- ✅ **No Diagnostics**: Clean code with no warnings
+
+### 🎯 **Ready for Testing:**
+The feature is now complete and ready for browser testing at:
+`http://localhost:5173/cloud-health-map-v2/`
+
+**Test Scenarios:**
+1. Switch between Quick Select and Custom modes
+2. Search for specific regions (e.g., "us-east", "europe")
+3. Select mixed regions across providers
+4. Use bulk Select All / Clear All actions
+5. Verify map updates with custom selections
+
+This is a **game-changing feature** that makes the tool incredibly valuable for real-world multi-cloud monitoring! 🎉

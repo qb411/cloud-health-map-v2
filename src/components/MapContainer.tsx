@@ -21,6 +21,8 @@ const MapContainer = ({
   const [shouldReset, setShouldReset] = useState(false);
   const [regionStatuses, setRegionStatuses] = useState<Map<string, ServiceStatus>>(new Map());
   const [selectedProvider, setSelectedProvider] = useState<CloudProvider | 'all'>('all'); // Start with all providers
+  const [selectedRegions, setSelectedRegions] = useState<Set<string>>(new Set()); // Custom region selection
+  const [selectionMode, setSelectionMode] = useState<'provider' | 'custom'>('provider'); // Selection mode
 
   // Load region statuses on mount
   useEffect(() => {
@@ -50,10 +52,12 @@ const MapContainer = ({
     loadRegionStatuses();
   }, []);
 
-  // Filter regions based on selected provider
-  const filteredRegions = selectedProvider === 'all' 
-    ? ALL_REGIONS 
-    : ALL_REGIONS.filter(region => region.provider === selectedProvider);
+  // Filter regions based on selection mode
+  const filteredRegions = selectionMode === 'custom'
+    ? ALL_REGIONS.filter(region => selectedRegions.has(region.id))
+    : (selectedProvider === 'all' 
+        ? ALL_REGIONS 
+        : ALL_REGIONS.filter(region => region.provider === selectedProvider));
 
   const handleMapMove = (center: LatLngExpression, zoom: number) => {
     // Convert LatLngExpression to [number, number] tuple
@@ -92,7 +96,9 @@ const MapContainer = ({
   console.log('MapContainer render:', { 
     filteredRegions: filteredRegions.length, 
     mapState, 
-    selectedProvider 
+    selectedProvider,
+    selectionMode,
+    selectedRegionsCount: selectedRegions.size
   });
 
   return (
@@ -234,6 +240,10 @@ const MapContainer = ({
       <CollapsibleRegionSelector
         selectedProvider={selectedProvider}
         onProviderChange={setSelectedProvider}
+        selectedRegions={selectedRegions}
+        onRegionsChange={setSelectedRegions}
+        selectionMode={selectionMode}
+        onModeChange={setSelectionMode}
         filteredRegionsCount={filteredRegions.length}
         currentZoom={mapState.zoom}
         onResetView={handleResetView}

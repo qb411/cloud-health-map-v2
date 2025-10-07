@@ -50,6 +50,7 @@ graph TB
 **State Management:** React Context + useReducer
 - Sufficient for application complexity
 - localStorage integration for persistence
+- Dual-mode region selection (provider-based and custom)
 
 **Styling:** Tailwind CSS
 - Utility-first approach for responsive design
@@ -58,6 +59,42 @@ graph TB
 **HTTP Client:** Axios
 - Promise-based HTTP client with interceptors
 - Built-in request/response transformation
+
+### Advanced Region Selection Architecture
+
+The region selection system supports two distinct modes to accommodate different user workflows:
+
+#### Provider Mode (Quick Select)
+- Traditional provider-based filtering (All, AWS, Azure, GCP, OCI)
+- Shows all regions from selected provider(s)
+- Optimized for users who work primarily within single cloud ecosystems
+
+#### Custom Mode (Individual Selection)
+- Granular region selection across multiple providers
+- Search functionality for finding specific regions
+- Organized by provider with expand/collapse sections
+- Bulk actions for efficient selection management
+- Supports mixed provider combinations (e.g., AWS us-east-1 + Azure westeurope + GCP us-central1)
+
+#### State Management Strategy
+```typescript
+interface RegionSelectionState {
+  selectionMode: 'provider' | 'custom';
+  selectedProvider: CloudProvider | 'all';
+  selectedRegions: Set<string>;
+  searchTerm: string;
+  expandedProviders: Set<CloudProvider>;
+}
+```
+
+#### Region Filtering Logic
+```typescript
+const filteredRegions = selectionMode === 'custom'
+  ? (selectedRegions.size === 0 ? ALL_REGIONS : ALL_REGIONS.filter(region => selectedRegions.has(region.id)))
+  : (selectedProvider === 'all' 
+      ? ALL_REGIONS 
+      : ALL_REGIONS.filter(region => region.provider === selectedProvider));
+```
 
 ## Components and Interfaces
 
@@ -122,7 +159,30 @@ interface IncidentPanelProps {
 - Displays detailed incident information
 - Handles panel open/close animations
 
-#### 5. StatusService
+#### 5. CollapsibleRegionSelector Component
+```typescript
+interface CollapsibleRegionSelectorProps {
+  selectedProvider: CloudProvider | 'all';
+  onProviderChange: (provider: CloudProvider | 'all') => void;
+  selectedRegions: Set<string>;
+  onRegionsChange: (regions: Set<string>) => void;
+  selectionMode: 'provider' | 'custom';
+  onModeChange: (mode: 'provider' | 'custom') => void;
+  filteredRegionsCount: number;
+  currentZoom: number;
+  onResetView: () => void;
+}
+```
+
+**Responsibilities:**
+- Provides collapsible interface for region selection
+- Supports both provider-based and custom region selection modes
+- Implements search functionality for finding specific regions
+- Manages bulk selection actions (Select All/Clear All)
+- Displays selection status and counts in collapsed state
+- Organizes regions by provider with expand/collapse functionality
+
+#### 6. StatusService
 ```typescript
 interface StatusService {
   fetchAllProviderStatus(): Promise<ProviderStatus[]>;

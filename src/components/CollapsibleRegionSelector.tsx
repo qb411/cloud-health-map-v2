@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { CloudProvider } from '../types';
 import { PROVIDER_COLORS } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
@@ -7,6 +7,10 @@ import { ALL_REGIONS } from '../data/regions';
 interface CollapsibleRegionSelectorProps {
   selectedProvider: CloudProvider | 'all';
   onProviderChange: (provider: CloudProvider | 'all') => void;
+  selectedRegions: Set<string>;
+  onRegionsChange: (regions: Set<string>) => void;
+  selectionMode: 'provider' | 'custom';
+  onModeChange: (mode: 'provider' | 'custom') => void;
   filteredRegionsCount: number;
   currentZoom: number;
   onResetView: () => void;
@@ -15,15 +19,81 @@ interface CollapsibleRegionSelectorProps {
 const CollapsibleRegionSelector = ({
   selectedProvider,
   onProviderChange,
+  selectedRegions,
+  onRegionsChange,
+  selectionMode,
+  onModeChange,
   filteredRegionsCount,
   currentZoom,
   onResetView
 }: CollapsibleRegionSelectorProps) => {
   const { theme } = useTheme();
   const [isExpanded, setIsExpanded] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [expandedProviders, setExpandedProviders] = useState<Set<CloudProvider>>(new Set());
+
+  // Group regions by provider for custom selection
+  const regionsByProvider = useMemo(() => {
+    const grouped = ALL_REGIONS.reduce((acc, region) => {
+      if (!acc[region.provider]) {
+        acc[region.provider] = [];
+      }
+      acc[region.provider].push(region);
+      return acc;
+    }, {} as Record<CloudProvider, typeof ALL_REGIONS>);
+    // Sort regions within each provider
+    Object.keys(grouped).forEach(provider => {
+      grouped[provider as CloudProvider].sort((a, b) => a.name.localeCompare(b.name));
+    });
+    return grouped;
+  }, []);
+
+  // Filter regions based on search term
+  const filteredRegionsByProvider = useMemo(() => {
+    if (!searchTerm) return regionsByProvider;
+    const filtered: Record<CloudProvider, typeof ALL_REGIONS> = {} as Record<CloudProvider, typeof ALL_REGIONS>;
+    Object.entries(regionsByProvider).forEach(([provider, providerRegions]) => {
+      const matchingRegions = providerRegions.filter(region =>
+        region.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        region.id.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      if (matchingRegions.length > 0) {
+        filtered[provider as CloudProvider] = matchingRegions;
+      }
+    });
+    return filtered;
+  }, [regionsByProvider, searchTerm]);
+
+  // Handle individual region toggle
+  const handleRegionToggle = (regionId: string) => {
+    const newSelection = new Set(selectedRegions);
+    if (newSelection.has(regionId)) {
+      newSelection.delete(regionId);
+    } else {
+      newSelection.add(regionId);
+    }
+    onRegionsChange(newSelection);
+  };
+
+  // Handle provider expansion toggle
+  const toggleProviderExpansion = (provider: CloudProvider) => {
+    const newExpanded = new Set(expandedProviders);
+    if (newExpanded.has(provider)) {
+      newExpanded.delete(provider);
+    } else {
+      newExpanded.add(provider);
+    }
+    setExpandedProviders(newExpanded);
+  };
 
   // Get current selection status for display
   const getSelectionStatus = () => {
+    if (selectionMode === 'custom') {
+      if (selectedRegions.size === 0) {
+        return { text: 'None', color: '#6b7280' };
+      }
+      return { text: `${selectedRegions.size}`, color: '#8b5cf6' };
+    }
     if (selectedProvider === 'all') {
       return { text: 'All', color: '#3b82f6' };
     }
@@ -154,100 +224,291 @@ const CollapsibleRegionSelector = ({
         Showing {filteredRegionsCount} of {ALL_REGIONS.length} regions
       </div>
 
-      {/* All Providers Button */}
-      <button
-        onClick={() => onProviderChange('all')}
-        style={{
-          padding: '6px 8px',
-          borderRadius: '4px',
-          border: `1px solid ${
-            selectedProvider === 'all' 
-              ? '#3b82f6'
-              : (theme === 'dark' ? '#374151' : '#e5e7eb')
-          }`,
-          backgroundColor: selectedProvider === 'all' 
-            ? '#3b82f6'
-            : (theme === 'dark' ? '#1f2937' : 'white'),
-          color: selectedProvider === 'all' 
-            ? 'white' 
-            : (theme === 'dark' ? '#d1d5db' : '#374151'),
-          cursor: 'pointer',
-          fontSize: '11px',
-          fontWeight: '500',
-          transition: 'all 0.2s ease',
-          width: '100%',
-          marginBottom: '8px'
-        }}
-        onMouseOver={(e) => {
-          if (selectedProvider !== 'all') {
-            e.currentTarget.style.backgroundColor = theme === 'dark' ? '#374151' : '#f3f4f6';
-          }
-        }}
-        onMouseOut={(e) => {
-          if (selectedProvider !== 'all') {
-            e.currentTarget.style.backgroundColor = theme === 'dark' ? '#1f2937' : 'white';
-          }
-        }}
-      >
-        All Providers
-      </button>
+      {/* Mode Selection */}
+      <div style={{ display: 'flex', gap: '4px', marginBottom: '12px' }}>
+        <button
+          onClick={() => onModeChange('provider')}
+          style={{
+            flex: 1,
+            padding: '4px 8px',
+            borderRadius: '4px',
+            border: `1px solid ${selectionMode === 'provider' ? '#3b82f6' : (theme === 'dark' ? '#374151' : '#e5e7eb')}`,
+            backgroundColor: selectionMode === 'provider' ? '#3b82f6' : (theme === 'dark' ? '#1f2937' : 'white'),
+            color: selectionMode === 'provider' ? 'white' : (theme === 'dark' ? '#d1d5db' : '#374151'),
+            cursor: 'pointer',
+            fontSize: '10px',
+            fontWeight: '500',
+            transition: 'all 0.2s ease'
+          }}
+        >
+          Quick Select
+        </button>
+        <button
+          onClick={() => onModeChange('custom')}
+          style={{
+            flex: 1,
+            padding: '4px 8px',
+            borderRadius: '4px',
+            border: `1px solid ${selectionMode === 'custom' ? '#8b5cf6' : (theme === 'dark' ? '#374151' : '#e5e7eb')}`,
+            backgroundColor: selectionMode === 'custom' ? '#8b5cf6' : (theme === 'dark' ? '#1f2937' : 'white'),
+            color: selectionMode === 'custom' ? 'white' : (theme === 'dark' ? '#d1d5db' : '#374151'),
+            cursor: 'pointer',
+            fontSize: '10px',
+            fontWeight: '500',
+            transition: 'all 0.2s ease'
+          }}
+        >
+          Custom
+        </button>
+      </div>
 
-      {/* Provider Grid (2x2) */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
-        {[
-          { key: 'aws' as const, label: 'AWS', color: PROVIDER_COLORS.aws },
-          { key: 'azure' as const, label: 'Azure', color: PROVIDER_COLORS.azure },
-          { key: 'gcp' as const, label: 'GCP', color: PROVIDER_COLORS.gcp },
-          { key: 'oci' as const, label: 'OCI', color: PROVIDER_COLORS.oci },
-        ].map((provider) => {
-          const isSelected = selectedProvider === provider.key;
-          
-          return (
+      {selectionMode === 'provider' ? (
+        <>
+          {/* All Providers Button */}
+          <button
+            onClick={() => onProviderChange('all')}
+            style={{
+              padding: '6px 8px',
+              borderRadius: '4px',
+              border: `1px solid ${
+                selectedProvider === 'all' 
+                  ? '#3b82f6'
+                  : (theme === 'dark' ? '#374151' : '#e5e7eb')
+              }`,
+              backgroundColor: selectedProvider === 'all' 
+                ? '#3b82f6'
+                : (theme === 'dark' ? '#1f2937' : 'white'),
+              color: selectedProvider === 'all' 
+                ? 'white' 
+                : (theme === 'dark' ? '#d1d5db' : '#374151'),
+              cursor: 'pointer',
+              fontSize: '11px',
+              fontWeight: '500',
+              transition: 'all 0.2s ease',
+              width: '100%',
+              marginBottom: '8px'
+            }}
+            onMouseOver={(e) => {
+              if (selectedProvider !== 'all') {
+                e.currentTarget.style.backgroundColor = theme === 'dark' ? '#374151' : '#f3f4f6';
+              }
+            }}
+            onMouseOut={(e) => {
+              if (selectedProvider !== 'all') {
+                e.currentTarget.style.backgroundColor = theme === 'dark' ? '#1f2937' : 'white';
+              }
+            }}
+          >
+            All Providers
+          </button>
+
+          {/* Provider Grid (2x2) */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
+            {[
+              { key: 'aws' as const, label: 'AWS', color: PROVIDER_COLORS.aws },
+              { key: 'azure' as const, label: 'Azure', color: PROVIDER_COLORS.azure },
+              { key: 'gcp' as const, label: 'GCP', color: PROVIDER_COLORS.gcp },
+              { key: 'oci' as const, label: 'OCI', color: PROVIDER_COLORS.oci },
+            ].map((provider) => {
+              const isSelected = selectedProvider === provider.key;
+              
+              return (
+                <button
+                  key={provider.key}
+                  onClick={() => onProviderChange(provider.key)}
+                  style={{
+                    padding: '4px 6px',
+                    borderRadius: '4px',
+                    border: `1px solid ${provider.color}`,
+                    backgroundColor: isSelected 
+                      ? provider.color
+                      : (theme === 'dark' ? '#1f2937' : 'white'),
+                    color: isSelected 
+                      ? 'white' 
+                      : provider.color,
+                    cursor: 'pointer',
+                    fontSize: '10px',
+                    fontWeight: '500',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.style.backgroundColor = theme === 'dark' ? '#374151' : '#f3f4f6';
+                    }
+                  }}
+                  onMouseOut={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.style.backgroundColor = theme === 'dark' ? '#1f2937' : 'white';
+                    }
+                  }}
+                >
+                  <div style={{
+                    width: '6px',
+                    height: '6px',
+                    borderRadius: '1px',
+                    backgroundColor: provider.color,
+                    border: isSelected ? '1px solid white' : 'none'
+                  }} />
+                  {provider.label}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      ) : (
+        <>
+          {/* Search Bar */}
+          <input
+            type="text"
+            placeholder="Search regions..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '6px 8px',
+              borderRadius: '4px',
+              border: `1px solid ${theme === 'dark' ? '#374151' : '#d1d5db'}`,
+              backgroundColor: theme === 'dark' ? '#374151' : 'white',
+              color: theme === 'dark' ? '#f9fafb' : '#111827',
+              fontSize: '11px',
+              marginBottom: '12px'
+            }}
+          />
+
+          {/* Quick Actions */}
+          <div style={{ display: 'flex', gap: '4px', marginBottom: '12px' }}>
             <button
-              key={provider.key}
-              onClick={() => onProviderChange(provider.key)}
+              onClick={() => onRegionsChange(new Set(ALL_REGIONS.map(r => r.id)))}
               style={{
+                flex: 1,
                 padding: '4px 6px',
-                borderRadius: '4px',
-                border: `1px solid ${provider.color}`,
-                backgroundColor: isSelected 
-                  ? provider.color
-                  : (theme === 'dark' ? '#1f2937' : 'white'),
-                color: isSelected 
-                  ? 'white' 
-                  : provider.color,
+                borderRadius: '3px',
+                border: `1px solid ${theme === 'dark' ? '#374151' : '#d1d5db'}`,
+                backgroundColor: theme === 'dark' ? '#374151' : '#f9fafb',
+                color: theme === 'dark' ? '#d1d5db' : '#374151',
                 cursor: 'pointer',
-                fontSize: '10px',
-                fontWeight: '500',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                justifyContent: 'center',
-                transition: 'all 0.2s ease'
-              }}
-              onMouseOver={(e) => {
-                if (!isSelected) {
-                  e.currentTarget.style.backgroundColor = theme === 'dark' ? '#374151' : '#f3f4f6';
-                }
-              }}
-              onMouseOut={(e) => {
-                if (!isSelected) {
-                  e.currentTarget.style.backgroundColor = theme === 'dark' ? '#1f2937' : 'white';
-                }
+                fontSize: '9px',
+                fontWeight: '500'
               }}
             >
-              <div style={{
-                width: '6px',
-                height: '6px',
-                borderRadius: '1px',
-                backgroundColor: provider.color,
-                border: isSelected ? '1px solid white' : 'none'
-              }} />
-              {provider.label}
+              Select All
             </button>
-          );
-        })}
-      </div>
+            <button
+              onClick={() => onRegionsChange(new Set())}
+              style={{
+                flex: 1,
+                padding: '4px 6px',
+                borderRadius: '3px',
+                border: `1px solid ${theme === 'dark' ? '#374151' : '#d1d5db'}`,
+                backgroundColor: theme === 'dark' ? '#374151' : '#f9fafb',
+                color: theme === 'dark' ? '#d1d5db' : '#374151',
+                cursor: 'pointer',
+                fontSize: '9px',
+                fontWeight: '500'
+              }}
+            >
+              Clear All
+            </button>
+          </div>
+
+          {/* Region List by Provider */}
+          <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+            {Object.entries(filteredRegionsByProvider).map(([provider, providerRegions]) => {
+              const isExpanded = expandedProviders.has(provider as CloudProvider);
+              const providerColor = PROVIDER_COLORS[provider as CloudProvider];
+              const selectedCount = providerRegions.filter(r => selectedRegions.has(r.id)).length;
+              
+              return (
+                <div key={provider} style={{ marginBottom: '8px' }}>
+                  <div 
+                    onClick={() => toggleProviderExpansion(provider as CloudProvider)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '4px 0',
+                      cursor: 'pointer',
+                      borderRadius: '3px'
+                    }}
+                  >
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      fontSize: '10px',
+                      fontWeight: '600',
+                      color: theme === 'dark' ? '#f3f4f6' : '#374151'
+                    }}>
+                      <div style={{
+                        width: '6px',
+                        height: '6px',
+                        borderRadius: '1px',
+                        backgroundColor: providerColor
+                      }} />
+                      <span>{provider.toUpperCase()}</span>
+                      <span style={{ 
+                        fontSize: '8px', 
+                        transform: `rotate(${isExpanded ? 90 : 0}deg)`, 
+                        transition: 'transform 0.2s' 
+                      }}>
+                        ▶
+                      </span>
+                    </div>
+                    <span style={{
+                      fontSize: '9px',
+                      color: theme === 'dark' ? '#9ca3af' : '#6b7280'
+                    }}>
+                      {selectedCount}/{providerRegions.length}
+                    </span>
+                  </div>
+                  {isExpanded && (
+                    <div style={{ marginLeft: '12px', marginTop: '4px' }}>
+                      {providerRegions.map((region) => (
+                        <div key={region.id} style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '2px 0',
+                          fontSize: '9px'
+                        }}>
+                          <input
+                            type="checkbox"
+                            checked={selectedRegions.has(region.id)}
+                            onChange={() => handleRegionToggle(region.id)}
+                            style={{
+                              width: '10px',
+                              height: '10px',
+                              cursor: 'pointer'
+                            }}
+                          />
+                          <span 
+                            style={{
+                              color: theme === 'dark' ? '#d1d5db' : '#4b5563',
+                              cursor: 'pointer',
+                              flex: 1,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap'
+                            }}
+                            onClick={() => handleRegionToggle(region.id)}
+                            title={`${region.name} (${region.id})`}
+                          >
+                            {region.name}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
 
       {/* Stats and Controls */}
       <div style={{

@@ -199,6 +199,10 @@
 - [x] 18. Implement collapsible region selector component
 
 
+
+
+
+
   - Create CollapsibleRegionSelector component following Supabase connection tester pattern
   - Replace existing control panel region selector with collapsible floating component
   - Implement collapsed state as small circular icon in top-right corner with status indicator
