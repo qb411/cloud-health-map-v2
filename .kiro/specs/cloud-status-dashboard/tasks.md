@@ -196,7 +196,23 @@
   - Create state reset functionality for clearing stored data
   - _Requirements: 6.1, 6.2, 6.4, 6.5_
 
-- [ ] 18. Optimize for large screen and TV display usage
+- [x] 18. Implement collapsible region selector component
+
+
+  - Create CollapsibleRegionSelector component following Supabase connection tester pattern
+  - Replace existing control panel region selector with collapsible floating component
+  - Implement collapsed state as small circular icon in top-right corner with status indicator
+  - Create expanded state as full panel with all provider selection options (All, AWS, Azure, GCP, OCI)
+  - Add smooth expand/collapse animations and hover effects
+  - Maintain all existing functionality (provider filtering, region counts, selection state)
+  - Position using fixed positioning to avoid layout conflicts with existing components
+  - Include advanced region selection capabilities (search, individual region selection, mixed provider selection)
+  - Implement proper theming support for dark/light modes
+  - Add keyboard navigation and accessibility features
+  - Test on mobile devices and ensure responsive behavior
+  - _Requirements: 1.2, 1.3, 1.4, 3.1, 5.1, 5.2_
+
+- [ ] 19. Optimize for large screen and TV display usage
   - Implement full-screen mode toggle functionality
   - Add large screen responsive breakpoints and styling
   - Increase text and UI element sizes for distance viewing
@@ -204,14 +220,14 @@
   - Add keyboard navigation support for accessibility
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-- [ ] 19. Implement availability zone display for zoomed regions
+- [ ] 20. Implement availability zone display for zoomed regions
   - Add availability zone data to region definitions
   - Create AZ overlay components that appear at high zoom levels
   - Implement zoom-level-based visibility controls
   - Add AZ-specific status indicators and click handlers
   - _Requirements: 1.5_
 
-- [ ] 20. Add comprehensive error handling and user feedback
+- [ ] 21. Add comprehensive error handling and user feedback
   - Implement loading states for all async operations
   - Create user-friendly error messages for API failures
   - Add network status indicators and retry buttons
@@ -219,7 +235,7 @@
   - Create error boundary components for React error handling
   - _Requirements: 2.4, 4.5, 7.5_
 
-- [ ] 21. Create unit tests for core components and services
+- [ ] 22. Create unit tests for core components and services
   - Write tests for MapContainer component interactions
   - Test RegionOverlay click and status display functionality
   - Create tests for StatusService API integration methods
@@ -227,7 +243,7 @@
   - Test RegionalView and IncidentPanel component behavior
   - _Requirements: All requirements validation_
 
-- [ ] 22. Implement integration tests for user workflows
+- [ ] 23. Implement integration tests for user workflows
   - Test complete user journey from map to incident details
   - Verify auto-refresh functionality and data updates
   - Test responsive behavior across different screen sizes
@@ -235,7 +251,7 @@
   - Test localStorage persistence across browser sessions
   - _Requirements: All requirements validation_
 
-- [ ] 23. Add performance optimizations and final polish
+- [ ] 24. Add performance optimizations and final polish
   - Implement region clustering for performance at low zoom levels
   - Add lazy loading for region details and incident data
   - Optimize bundle size with code splitting
