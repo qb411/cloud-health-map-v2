@@ -128,6 +128,8 @@
   - _Requirements: 1.2, 1.3, 1.4_
 
 - [ ] 11. Research and implement active incident detection from public cloud provider feeds
+
+
   - Investigate OCI incident summary RSS feed (https://ocistatus.oraclecloud.com/api/v2/incident-summary.rss) for active incident patterns
   - Research AWS RSS feed structure during active incidents to identify incident markers and status indicators
   - Analyze Azure status feed format during service disruptions to detect active issues
@@ -197,6 +199,8 @@
   - _Requirements: 6.1, 6.2, 6.4, 6.5_
 
 - [x] 18. Implement collapsible region selector component
+
+
 
 
 

@@ -199,14 +199,40 @@ async function parseAWSFeed(xmlData, providerId) {
       const regionMatch = title.match(/\[([\w-]+)\]/);
       const regionId = regionMatch ? regionMatch[1] : 'global';
       
-      // Determine status from title/description
+      // Enhanced incident detection for AWS
+      const text = `${title} ${description}`.toLowerCase();
+      
+      // Check if incident is resolved
+      const resolvedKeywords = ['resolved', 'restored', 'completed', 'fixed'];
+      const isResolved = resolvedKeywords.some(keyword => text.includes(keyword));
+      
+      // Check if incident is active
+      const activeKeywords = ['investigating', 'identified', 'monitoring', 'ongoing', 'experiencing'];
+      const isActive = activeKeywords.some(keyword => text.includes(keyword));
+      
+      // Skip resolved incidents for real-time status
+      if (isResolved) {
+        continue;
+      }
+      
+      // Determine status and severity
       let status = 'operational';
-      if (title.toLowerCase().includes('outage') || description.toLowerCase().includes('outage')) {
+      let severity = 'medium';
+      
+      if (text.includes('outage') || text.includes('unavailable') || text.includes('down') || text.includes('failed')) {
         status = 'outage';
-      } else if (title.toLowerCase().includes('degraded') || description.toLowerCase().includes('degraded')) {
+        severity = 'high';
+      } else if (text.includes('degraded') || text.includes('elevated error') || text.includes('intermittent')) {
         status = 'degraded';
-      } else if (title.toLowerCase().includes('maintenance')) {
+        severity = 'medium';
+      } else if (text.includes('maintenance') || text.includes('scheduled')) {
         status = 'maintenance';
+        severity = 'low';
+      }
+      
+      // Only process if there's a clear issue or it's explicitly active
+      if (status === 'operational' && !isActive) {
+        continue;
       }
 
       // Extract service name
@@ -219,10 +245,13 @@ async function parseAWSFeed(xmlData, providerId) {
         region_name: REGION_MAPPINGS[providerId]?.[regionId] || regionId,
         service_name: serviceName,
         status: status,
+        severity: severity,
+        is_active: isActive || (status !== 'operational'),
         incident_id: guid,
         incident_title: title,
         incident_description: description,
         start_time: pubDate ? new Date(pubDate).toISOString() : new Date().toISOString(),
+        end_time: null, // AWS RSS doesn't provide end times
         last_updated: new Date().toISOString()
       });
 
@@ -255,14 +284,40 @@ async function parseAzureFeed(xmlData, providerId) {
       const regionMatch = description.match(/(\w+\s*\w*)\s*-/);
       const regionId = regionMatch ? regionMatch[1].toLowerCase().replace(/\s+/g, '') : 'global';
       
-      // Determine status
+      // Enhanced Azure incident detection
+      const text = `${title} ${description}`.toLowerCase();
+      
+      // Check if incident is resolved
+      const resolvedKeywords = ['resolved', 'mitigated', 'restored', 'completed'];
+      const isResolved = resolvedKeywords.some(keyword => text.includes(keyword));
+      
+      // Check if incident is active
+      const activeKeywords = ['investigating', 'preliminary', 'ongoing', 'mitigating'];
+      const isActive = activeKeywords.some(keyword => text.includes(keyword));
+      
+      // Skip resolved incidents
+      if (isResolved) {
+        continue;
+      }
+      
+      // Determine status and severity
       let status = 'operational';
-      if (title.toLowerCase().includes('outage') || description.toLowerCase().includes('outage')) {
+      let severity = 'medium';
+      
+      if (text.includes('outage') || text.includes('unavailable') || text.includes('major impact') || text.includes('complete')) {
         status = 'outage';
-      } else if (title.toLowerCase().includes('degraded') || description.toLowerCase().includes('degraded')) {
+        severity = 'high';
+      } else if (text.includes('degraded') || text.includes('performance issues') || text.includes('intermittent')) {
         status = 'degraded';
-      } else if (title.toLowerCase().includes('maintenance')) {
+        severity = 'medium';
+      } else if (text.includes('advisory') || text.includes('maintenance') || text.includes('informational')) {
         status = 'maintenance';
+        severity = 'low';
+      }
+      
+      // Only process if there's a clear issue or it's explicitly active
+      if (status === 'operational' && !isActive) {
+        continue;
       }
 
       incidents.push({
@@ -271,10 +326,13 @@ async function parseAzureFeed(xmlData, providerId) {
         region_name: REGION_MAPPINGS[providerId]?.[regionId] || regionId,
         service_name: 'Azure Service',
         status: status,
+        severity: severity,
+        is_active: isActive || (status !== 'operational'),
         incident_id: guid,
         incident_title: title,
         incident_description: description,
         start_time: pubDate ? new Date(pubDate).toISOString() : new Date().toISOString(),
+        end_time: null, // Azure RSS doesn't provide end times
         last_updated: new Date().toISOString()
       });
 
@@ -287,7 +345,7 @@ async function parseAzureFeed(xmlData, providerId) {
 }
 
 /**
- * Parse GCP JSON feed
+ * Parse GCP JSON feed with enhanced incident detection
  */
 async function parseGCPFeed(jsonData, providerId) {
   const incidents = [];
@@ -298,9 +356,34 @@ async function parseGCPFeed(jsonData, providerId) {
 
   for (const incident of jsonData) {
     try {
-      // GCP incidents have status_impact, affected_products, etc.
-      const status = incident.status_impact?.toLowerCase() === 'service_outage' ? 'outage' :
-                   incident.status_impact?.toLowerCase() === 'service_disruption' ? 'degraded' : 'operational';
+      // Enhanced incident detection - check if incident is currently active
+      const isActive = !incident.end; // No end timestamp means ongoing
+      
+      // Only process active incidents for real-time status
+      // (Historical incidents don't affect current region status)
+      if (!isActive) {
+        continue; // Skip resolved incidents
+      }
+      
+      // Enhanced severity classification
+      let status = 'operational';
+      let severity = 'low';
+      
+      if (incident.status_impact?.toLowerCase() === 'service_outage') {
+        status = 'outage';
+        severity = 'high';
+      } else if (incident.status_impact?.toLowerCase() === 'service_disruption') {
+        status = 'degraded';
+        severity = 'medium';
+      } else if (incident.status_impact?.toLowerCase() === 'service_information') {
+        status = 'operational';
+        severity = 'low';
+      }
+      
+      // Use incident severity if available
+      if (incident.severity) {
+        severity = incident.severity;
+      }
 
       // Extract regions from affected products
       const regions = incident.affected_products?.map(product => {
@@ -316,11 +399,15 @@ async function parseGCPFeed(jsonData, providerId) {
           region_name: REGION_MAPPINGS[providerId]?.[regionId] || regionId,
           service_name: incident.affected_products?.[0]?.title || 'GCP Service',
           status: status,
+          severity: severity,
+          is_active: isActive,
           incident_id: incident.id,
-          incident_title: incident.summary,
-          incident_description: incident.most_recent_update?.text || incident.summary,
+          incident_title: incident.summary || incident.external_desc,
+          incident_description: incident.most_recent_update?.text || incident.external_desc || incident.summary,
           start_time: incident.begin ? new Date(incident.begin).toISOString() : new Date().toISOString(),
           end_time: incident.end ? new Date(incident.end).toISOString() : null,
+          status_impact: incident.status_impact,
+          affected_products: incident.affected_products?.map(p => p.title).join(', '),
           last_updated: new Date().toISOString()
         });
       }
