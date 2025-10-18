@@ -67,6 +67,20 @@ export interface RegionStatusCurrent {
   last_updated: string;
 }
 
+export interface RssProcessingError {
+  id: string;
+  provider: 'aws' | 'azure' | 'gcp' | 'oci';
+  error_stage: 'fetch' | 'parse' | 'validate' | 'store';
+  error_severity: 'info' | 'warning' | 'error' | 'critical';
+  error_message: string;
+  error_details?: any;
+  feed_url?: string;
+  http_status_code?: number;
+  affected_regions?: string[];
+  occurred_at: string;
+  resolved_at?: string;
+}
+
 // Helper functions for database operations
 export class SupabaseService {
   
@@ -237,6 +251,78 @@ export class SupabaseService {
       console.error('Database connection test failed:', error);
       return false;
     }
+  }
+
+  /**
+   * Get detailed status for a specific region
+   */
+  static async getRegionDetails(provider: string, regionId: string): Promise<RegionStatusCurrent | null> {
+    if (!supabase) {
+      console.warn('Supabase not configured, returning null');
+      return null;
+    }
+
+    const { data, error } = await supabase
+      .from('region_status_current')
+      .select('*')
+      .eq('provider', provider)
+      .eq('region_id', regionId)
+      .maybeSingle();
+
+    if (error) {
+      console.error(`Error fetching details for ${provider}/${regionId}:`, error);
+      return null;
+    }
+
+    return data;
+  }
+
+  /**
+   * Get RSS processing errors for a specific provider
+   */
+  static async getProviderProcessingErrors(provider: string): Promise<RssProcessingError[]> {
+    if (!supabase) {
+      console.warn('Supabase not configured, returning empty data');
+      return [];
+    }
+
+    const { data, error } = await supabase
+      .from('rss_processing_errors')
+      .select('*')
+      .eq('provider', provider)
+      .order('occurred_at', { ascending: false })
+      .limit(20);
+
+    if (error) {
+      console.error(`Error fetching processing errors for ${provider}:`, error);
+      return [];
+    }
+
+    return data || [];
+  }
+
+  /**
+   * Get recent unresolved processing errors for a provider
+   */
+  static async getUnresolvedProcessingErrors(provider: string): Promise<RssProcessingError[]> {
+    if (!supabase) {
+      console.warn('Supabase not configured, returning empty data');
+      return [];
+    }
+
+    const { data, error } = await supabase
+      .from('rss_processing_errors')
+      .select('*')
+      .eq('provider', provider)
+      .is('resolved_at', null)
+      .order('occurred_at', { ascending: false });
+
+    if (error) {
+      console.error(`Error fetching unresolved errors for ${provider}:`, error);
+      return [];
+    }
+
+    return data || [];
   }
 }
 

@@ -6,18 +6,27 @@ import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import ThemeToggle from './components/ThemeToggle';
 // import AdBanner from './components/AdBanner'; // Commented out - will activate later
 import SupabaseConnectionTest from './components/SupabaseConnectionTest';
+import RegionDetailPanel from './components/RegionDetailPanel';
 
 const Dashboard = () => {
   const { theme } = useTheme();
   // Use actual region data
   const [regions] = useState<CloudRegion[]>([]);
   const [selectedRegion, setSelectedRegion] = useState<CloudRegion | undefined>();
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
 
   const handleRegionClick = (region: CloudRegion) => {
     setSelectedRegion(region);
+    setIsPanelOpen(true);
   };
 
   const handleMapClick = () => {
+    setSelectedRegion(undefined);
+    setIsPanelOpen(false);
+  };
+
+  const handlePanelClose = () => {
+    setIsPanelOpen(false);
     setSelectedRegion(undefined);
   };
 
@@ -116,11 +125,11 @@ const Dashboard = () => {
               Last updated: {new Date().toLocaleTimeString()}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ 
-                width: '8px', 
-                height: '8px', 
-                backgroundColor: '#10b981', 
-                borderRadius: '50%' 
+              <div style={{
+                width: '8px',
+                height: '8px',
+                backgroundColor: '#10b981',
+                borderRadius: '50%'
               }}></div>
               <span style={{ fontSize: '14px', color: styles.subtextColor }}>Live</span>
             </div>
@@ -169,6 +178,14 @@ const Dashboard = () => {
       
       {/* Temporary Supabase Connection Test */}
       <SupabaseConnectionTest />
+
+      {/* Region Detail Panel */}
+      <RegionDetailPanel
+        region={selectedRegion || null}
+        isOpen={isPanelOpen}
+        onClose={handlePanelClose}
+        isDarkMode={theme === 'dark'}
+      />
     </div>
   );
 };
