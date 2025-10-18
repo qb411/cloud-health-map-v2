@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MapContainer } from './components';
 import { CloudRegion } from './types';
 import { useKeyboardNavigation } from './hooks';
@@ -6,12 +6,20 @@ import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import ThemeToggle from './components/ThemeToggle';
 // import AdBanner from './components/AdBanner'; // Commented out - will activate later
 import SupabaseConnectionTest from './components/SupabaseConnectionTest';
+import { autoCleanupIfNeeded } from './utils/databaseCleanup';
 
 const Dashboard = () => {
   const { theme } = useTheme();
   // Use actual region data
   const [regions] = useState<CloudRegion[]>([]);
   const [selectedRegion, setSelectedRegion] = useState<CloudRegion | undefined>();
+
+  // Run automatic database cleanup if needed (once per day)
+  useEffect(() => {
+    autoCleanupIfNeeded().catch(error => {
+      console.error('Auto cleanup failed:', error);
+    });
+  }, []);
 
   const handleRegionClick = (region: CloudRegion) => {
     setSelectedRegion(region);
