@@ -49,6 +49,11 @@ export class SupabaseStatusService {
     }
 
     try {
+      if (!supabase) {
+        console.warn('Supabase not configured, returning operational status');
+        return 'operational';
+      }
+
       // Query region_status_current table
       const { data, error } = await supabase
         .from('region_status_current')
@@ -79,6 +84,12 @@ export class SupabaseStatusService {
     const statuses = new Map<string, ServiceStatus>();
 
     try {
+      if (!supabase) {
+        console.warn('Supabase not configured, returning operational status for all regions');
+        regions.forEach(region => statuses.set(region.id, 'operational'));
+        return statuses;
+      }
+
       // Fetch all region statuses in one query
       const { data, error } = await supabase
         .from('region_status_current')
@@ -93,7 +104,7 @@ export class SupabaseStatusService {
 
       // Create a lookup map from database results
       const dbStatusMap = new Map<string, ServiceStatus>();
-      data?.forEach((row: RegionStatusData) => {
+      data?.forEach((row: { provider: string; region_id: string; overall_status: ServiceStatus }) => {
         const key = `${row.provider}-${row.region_id}`;
         dbStatusMap.set(key, row.overall_status);
         this.statusCache.set(key, row.overall_status);
@@ -129,6 +140,11 @@ export class SupabaseStatusService {
     }
 
     try {
+      if (!supabase) {
+        console.warn('Supabase not configured, returning empty incidents');
+        return [];
+      }
+
       const { data, error } = await supabase
         .from('active_incidents')
         .select('*')
@@ -156,6 +172,11 @@ export class SupabaseStatusService {
    */
   async getAllActiveIncidents(): Promise<ActiveIncident[]> {
     try {
+      if (!supabase) {
+        console.warn('Supabase not configured, returning empty incidents');
+        return [];
+      }
+
       const { data, error } = await supabase
         .from('active_incidents')
         .select('*')
@@ -186,6 +207,11 @@ export class SupabaseStatusService {
     const summaries = new Map();
 
     try {
+      if (!supabase) {
+        console.warn('Supabase not configured, returning empty summaries');
+        return summaries;
+      }
+
       const { data, error } = await supabase
         .from('region_status_current')
         .select('provider, overall_status');
@@ -199,7 +225,7 @@ export class SupabaseStatusService {
       const providers: CloudProvider[] = ['aws', 'azure', 'gcp', 'oci'];
 
       providers.forEach(provider => {
-        const providerData = data?.filter((row: RegionStatusData) => row.provider === provider) || [];
+        const providerData = data?.filter((row: { provider: string; overall_status: ServiceStatus }) => row.provider === provider) || [];
 
         summaries.set(provider, {
           operational: providerData.filter(r => r.overall_status === 'operational').length,
@@ -222,6 +248,11 @@ export class SupabaseStatusService {
   subscribeToRegionUpdates(
     callback: (region: { provider: CloudProvider; region_id: string; status: ServiceStatus }) => void
   ) {
+    if (!supabase) {
+      console.warn('Supabase not configured, cannot subscribe to updates');
+      return null;
+    }
+
     return supabase
       .channel('region_status_changes')
       .on(
@@ -271,6 +302,11 @@ export class SupabaseStatusService {
    */
   async testConnection(): Promise<boolean> {
     try {
+      if (!supabase) {
+        console.warn('Supabase not configured');
+        return false;
+      }
+
       const { error } = await supabase
         .from('region_status_current')
         .select('id')
