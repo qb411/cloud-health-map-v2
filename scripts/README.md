@@ -1,87 +1,62 @@
-# RSS Feed Processor Scripts
+# Cloud Status Dashboard - Scripts
 
-This directory contains the Node.js scripts that process RSS feeds from cloud providers and store the data in Supabase.
+This directory contains scripts for processing cloud provider status feeds and managing the database.
 
-## Files
+## Setup
 
-- **`update-status.js`** - Main RSS processor script
-- **`test-feeds.js`** - Test script to verify RSS feeds are accessible
-- **`package.json`** - Node.js dependencies
-- **`.env.example`** - Environment variable template
+1. Install dependencies:
+```bash
+npm install
+```
 
-## Cloud Providers Supported
+2. Copy environment variables:
+```bash
+cp .env.example .env
+```
 
-| Provider | Type | URL | Status |
-|----------|------|-----|--------|
-| AWS | RSS/XML | https://status.aws.amazon.com/rss/all.rss | ✅ |
-| Azure | RSS/XML | https://status.azure.com/en-us/status/feed/ | ✅ |
-| GCP | JSON | https://status.cloud.google.com/incidents.json | ✅ |
-| OCI | JSON | https://ocistatus.oraclecloud.com/api/v2/incidents.json | ✅ |
+3. Add your Supabase credentials to `.env`
 
-## Local Testing
+## Essential Scripts
 
-1. **Install dependencies:**
-   ```bash
-   cd scripts
-   npm install
-   ```
+### 🚀 **Core Functionality**
+- `update-status.js` - **Main RSS processor** with enhanced incident detection
+- `region-mappings.js` - Region ID mappings for all cloud providers
 
-2. **Set up environment:**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your Supabase service role key
-   ```
+### 🧪 **Testing & Validation**
+- `test-supabase-integration.js` - **Comprehensive database integration test**
+- `test-feeds.js` - Test RSS feed accessibility and parsing
+- `validate-coordinates.js` - Validate region coordinate accuracy
 
-3. **Test RSS feeds:**
-   ```bash
-   npm test
-   ```
+### 🛠️ **Utilities**
+- `cleanup.sql` - **Database cleanup SQL commands**
+- `generate-region-mappings.js` - Generate region mappings from official sources
+- `check-rss-status.js` - Check RSS feed health
+- `test-github-actions.js` - Test GitHub Actions workflow
 
-4. **Run processor:**
-   ```bash
-   npm start
-   ```
+### 📋 **Documentation**
+- `get-service-key.md` - Instructions for Supabase service key setup
+- `toggle-rss-processing.md` - How to enable/disable RSS processing
 
-## Environment Variables
+## Quick Commands
 
-- **`SUPABASE_URL`** - Your Supabase project URL
-- **`SUPABASE_SERVICE_ROLE_KEY`** - Service role key (NOT anon key) for write access
+```bash
+# Test everything
+node test-supabase-integration.js
 
-## Data Processing
+# Process RSS feeds manually  
+node update-status.js
 
-The script processes each provider's feed and:
+# Test feed accessibility
+node test-feeds.js
 
-1. **Fetches** RSS/JSON data from public endpoints
-2. **Parses** XML (AWS/Azure) or JSON (GCP/OCI) formats
-3. **Normalizes** data into consistent incident format
-4. **Maps** services to regions using provider-specific logic
-5. **Stores** incidents in `cloud_status` table
-6. **Updates** region summaries in `region_status_current` table
+# Clean database (run SQL in Supabase dashboard)
+# See cleanup.sql
+```
 
-## Error Handling
+## Features
 
-- Network timeouts (30 seconds)
-- Malformed data (skips bad items)
-- Database errors (logs and continues)
-- Provider-specific parsing errors
-- Comprehensive logging for debugging
-
-## GitHub Actions Integration
-
-This script is designed to run in GitHub Actions every 15 minutes:
-
-- Uses repository secrets for Supabase credentials
-- Exits with error code if any provider fails
-- Provides detailed logging for monitoring
-- Handles rate limiting and network issues
-
-## Region Mapping
-
-Each provider uses different region identifiers:
-
-- **AWS**: `us-east-1`, `eu-west-1`, etc.
-- **Azure**: `eastus`, `westeurope`, etc.  
-- **GCP**: `us-central1`, `europe-west1`, etc.
-- **OCI**: `us-ashburn-1`, `eu-frankfurt-1`, etc.
-
-The script maps these to human-readable names for the dashboard.
+✅ **Enhanced Incident Detection** - Distinguishes active vs resolved incidents  
+✅ **Multi-Provider Support** - AWS, Azure, GCP, OCI  
+✅ **Severity Classification** - High/Medium/Low impact levels  
+✅ **Real-time Updates** - 15-minute GitHub Actions automation  
+✅ **Duplicate Prevention** - Smart incident ID handling
