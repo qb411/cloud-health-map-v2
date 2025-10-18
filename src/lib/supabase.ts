@@ -140,12 +140,11 @@ export class SupabaseService {
     }
 
     const { data, error } = await supabase
-      .from('cloud_status')
+      .from('active_incidents') // Use the view that filters for is_active=true
       .select('*')
       .eq('provider', provider)
       .eq('region_id', regionId)
       .neq('status', 'operational')
-      .is('end_time', null) // Only active incidents
       .order('start_time', { ascending: false });
 
     if (error) {

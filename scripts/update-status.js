@@ -16,6 +16,7 @@ import { createClient } from '@supabase/supabase-js';
 import { parseStringPromise } from 'xml2js';
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
+import { REGION_MAPPINGS, getRegionName } from './region-mappings.js';
 
 // Load environment variables
 dotenv.config();
@@ -61,45 +62,8 @@ const PROVIDERS = {
   }
 };
 
-// Region mapping for cloud providers
-const REGION_MAPPINGS = {
-  aws: {
-    'us-east-1': 'US East (N. Virginia)',
-    'us-east-2': 'US East (Ohio)',
-    'us-west-1': 'US West (N. California)',
-    'us-west-2': 'US West (Oregon)',
-    'eu-west-1': 'Europe (Ireland)',
-    'eu-central-1': 'Europe (Frankfurt)',
-    'ap-southeast-1': 'Asia Pacific (Singapore)',
-    'ap-northeast-1': 'Asia Pacific (Tokyo)',
-    // Add more AWS regions as needed
-  },
-  azure: {
-    'eastus': 'East US',
-    'westus': 'West US',
-    'centralus': 'Central US',
-    'northeurope': 'North Europe',
-    'westeurope': 'West Europe',
-    'eastasia': 'East Asia',
-    'southeastasia': 'Southeast Asia',
-    // Add more Azure regions as needed
-  },
-  gcp: {
-    'us-central1': 'Iowa',
-    'us-east1': 'South Carolina',
-    'us-west1': 'Oregon',
-    'europe-west1': 'Belgium',
-    'asia-east1': 'Taiwan',
-    // Add more GCP regions as needed
-  },
-  oci: {
-    'us-ashburn-1': 'US East (Ashburn)',
-    'us-phoenix-1': 'US West (Phoenix)',
-    'eu-frankfurt-1': 'Germany Central (Frankfurt)',
-    'uk-london-1': 'UK South (London)',
-    // Add more OCI regions as needed
-  }
-};
+// Region mappings now imported from region-mappings.js (176 regions total)
+// AWS: 37 regions, Azure: 59 regions, GCP: 41 regions, OCI: 39 regions
 
 /**
  * Main execution function
@@ -199,14 +163,40 @@ async function parseAWSFeed(xmlData, providerId) {
       const regionMatch = title.match(/\[([\w-]+)\]/);
       const regionId = regionMatch ? regionMatch[1] : 'global';
       
-      // Determine status from title/description
+      // Enhanced incident detection for AWS
+      const text = `${title} ${description}`.toLowerCase();
+      
+      // Check if incident is resolved
+      const resolvedKeywords = ['resolved', 'restored', 'completed', 'fixed'];
+      const isResolved = resolvedKeywords.some(keyword => text.includes(keyword));
+      
+      // Check if incident is active
+      const activeKeywords = ['investigating', 'identified', 'monitoring', 'ongoing', 'experiencing'];
+      const isActive = activeKeywords.some(keyword => text.includes(keyword));
+      
+      // Skip resolved incidents for real-time status
+      if (isResolved) {
+        continue;
+      }
+      
+      // Determine status and severity
       let status = 'operational';
-      if (title.toLowerCase().includes('outage') || description.toLowerCase().includes('outage')) {
+      let severity = 'medium';
+      
+      if (text.includes('outage') || text.includes('unavailable') || text.includes('down') || text.includes('failed')) {
         status = 'outage';
-      } else if (title.toLowerCase().includes('degraded') || description.toLowerCase().includes('degraded')) {
+        severity = 'high';
+      } else if (text.includes('degraded') || text.includes('elevated error') || text.includes('intermittent')) {
         status = 'degraded';
-      } else if (title.toLowerCase().includes('maintenance')) {
+        severity = 'medium';
+      } else if (text.includes('maintenance') || text.includes('scheduled')) {
         status = 'maintenance';
+        severity = 'low';
+      }
+      
+      // Only process if there's a clear issue or it's explicitly active
+      if (status === 'operational' && !isActive) {
+        continue;
       }
 
       // Extract service name
@@ -219,10 +209,15 @@ async function parseAWSFeed(xmlData, providerId) {
         region_name: REGION_MAPPINGS[providerId]?.[regionId] || regionId,
         service_name: serviceName,
         status: status,
+        severity: severity,
+        incident_severity: severity, // For database compatibility
+        is_active: isActive || (status !== 'operational'),
+        detection_confidence: isActive ? 'high' : 'medium',
         incident_id: guid,
         incident_title: title,
         incident_description: description,
         start_time: pubDate ? new Date(pubDate).toISOString() : new Date().toISOString(),
+        end_time: null, // AWS RSS doesn't provide end times
         last_updated: new Date().toISOString()
       });
 
@@ -255,14 +250,40 @@ async function parseAzureFeed(xmlData, providerId) {
       const regionMatch = description.match(/(\w+\s*\w*)\s*-/);
       const regionId = regionMatch ? regionMatch[1].toLowerCase().replace(/\s+/g, '') : 'global';
       
-      // Determine status
+      // Enhanced Azure incident detection
+      const text = `${title} ${description}`.toLowerCase();
+      
+      // Check if incident is resolved
+      const resolvedKeywords = ['resolved', 'mitigated', 'restored', 'completed'];
+      const isResolved = resolvedKeywords.some(keyword => text.includes(keyword));
+      
+      // Check if incident is active
+      const activeKeywords = ['investigating', 'preliminary', 'ongoing', 'mitigating'];
+      const isActive = activeKeywords.some(keyword => text.includes(keyword));
+      
+      // Skip resolved incidents
+      if (isResolved) {
+        continue;
+      }
+      
+      // Determine status and severity
       let status = 'operational';
-      if (title.toLowerCase().includes('outage') || description.toLowerCase().includes('outage')) {
+      let severity = 'medium';
+      
+      if (text.includes('outage') || text.includes('unavailable') || text.includes('major impact') || text.includes('complete')) {
         status = 'outage';
-      } else if (title.toLowerCase().includes('degraded') || description.toLowerCase().includes('degraded')) {
+        severity = 'high';
+      } else if (text.includes('degraded') || text.includes('performance issues') || text.includes('intermittent')) {
         status = 'degraded';
-      } else if (title.toLowerCase().includes('maintenance')) {
+        severity = 'medium';
+      } else if (text.includes('advisory') || text.includes('maintenance') || text.includes('informational')) {
         status = 'maintenance';
+        severity = 'low';
+      }
+      
+      // Only process if there's a clear issue or it's explicitly active
+      if (status === 'operational' && !isActive) {
+        continue;
       }
 
       incidents.push({
@@ -271,10 +292,15 @@ async function parseAzureFeed(xmlData, providerId) {
         region_name: REGION_MAPPINGS[providerId]?.[regionId] || regionId,
         service_name: 'Azure Service',
         status: status,
+        severity: severity,
+        incident_severity: severity, // For database compatibility
+        is_active: isActive || (status !== 'operational'),
+        detection_confidence: isActive ? 'high' : 'medium',
         incident_id: guid,
         incident_title: title,
         incident_description: description,
         start_time: pubDate ? new Date(pubDate).toISOString() : new Date().toISOString(),
+        end_time: null, // Azure RSS doesn't provide end times
         last_updated: new Date().toISOString()
       });
 
@@ -287,7 +313,7 @@ async function parseAzureFeed(xmlData, providerId) {
 }
 
 /**
- * Parse GCP JSON feed
+ * Parse GCP JSON feed with enhanced incident detection
  */
 async function parseGCPFeed(jsonData, providerId) {
   const incidents = [];
@@ -298,9 +324,39 @@ async function parseGCPFeed(jsonData, providerId) {
 
   for (const incident of jsonData) {
     try {
-      // GCP incidents have status_impact, affected_products, etc.
-      const status = incident.status_impact?.toLowerCase() === 'service_outage' ? 'outage' :
-                   incident.status_impact?.toLowerCase() === 'service_disruption' ? 'degraded' : 'operational';
+      // Enhanced incident detection - check if incident is currently active
+      const isActive = !incident.end; // No end timestamp means ongoing
+      
+      // Only process active incidents for real-time status
+      // (Historical incidents don't affect current region status)
+      if (!isActive) {
+        continue; // Skip resolved incidents
+      }
+      
+      // Enhanced severity classification
+      let status = 'operational';
+      let severity = 'low';
+      
+      if (incident.status_impact?.toLowerCase() === 'service_outage') {
+        status = 'outage';
+        severity = 'high';
+      } else if (incident.status_impact?.toLowerCase() === 'service_disruption') {
+        status = 'degraded';
+        severity = 'medium';
+      } else if (incident.status_impact?.toLowerCase() === 'service_information') {
+        // Skip informational incidents - they don't affect service status
+        continue;
+      }
+      
+      // Skip if status is still operational (no real impact)
+      if (status === 'operational') {
+        continue;
+      }
+      
+      // Use incident severity if available
+      if (incident.severity) {
+        severity = incident.severity;
+      }
 
       // Extract regions from affected products
       const regions = incident.affected_products?.map(product => {
@@ -316,11 +372,17 @@ async function parseGCPFeed(jsonData, providerId) {
           region_name: REGION_MAPPINGS[providerId]?.[regionId] || regionId,
           service_name: incident.affected_products?.[0]?.title || 'GCP Service',
           status: status,
+          severity: severity,
+          incident_severity: severity, // For database compatibility
+          is_active: isActive,
+          detection_confidence: 'high', // GCP has explicit end timestamp
           incident_id: incident.id,
-          incident_title: incident.summary,
-          incident_description: incident.most_recent_update?.text || incident.summary,
+          incident_title: incident.summary || incident.external_desc,
+          incident_description: incident.most_recent_update?.text || incident.external_desc || incident.summary,
           start_time: incident.begin ? new Date(incident.begin).toISOString() : new Date().toISOString(),
           end_time: incident.end ? new Date(incident.end).toISOString() : null,
+          status_impact: incident.status_impact,
+          affected_products: incident.affected_products?.map(p => p.title).join(', '),
           last_updated: new Date().toISOString()
         });
       }
@@ -334,19 +396,60 @@ async function parseGCPFeed(jsonData, providerId) {
 }
 
 /**
- * Parse OCI JSON feed
+ * Parse OCI JSON feed with enhanced active incident detection
  */
 async function parseOCIFeed(jsonData, providerId) {
   const incidents = [];
-  
+
   if (!jsonData.incidents || !Array.isArray(jsonData.incidents)) {
     return incidents;
   }
 
   for (const incident of jsonData.incidents) {
     try {
-      const status = incident.status?.toLowerCase() === 'resolved' ? 'operational' :
-                   incident.impact?.toLowerCase() === 'major' ? 'outage' : 'degraded';
+      // Enhanced OCI incident detection
+      const incidentStatus = incident.status?.toLowerCase() || '';
+      const incidentName = incident.name || '';
+      const incidentBody = incident.incident_updates?.[0]?.body || '';
+      const text = `${incidentName} ${incidentBody}`.toLowerCase();
+
+      // Check if incident is resolved
+      const resolvedKeywords = ['resolved', 'completed', 'restored'];
+      const isResolved = resolvedKeywords.some(keyword =>
+        incidentStatus.includes(keyword) || text.includes(keyword)
+      );
+
+      // Skip resolved incidents
+      if (isResolved || incidentStatus === 'resolved') {
+        continue;
+      }
+
+      // Check if incident is active
+      const activeKeywords = ['investigating', 'identified', 'monitoring', 'ongoing'];
+      const isActive = activeKeywords.some(keyword =>
+        incidentStatus.includes(keyword) || text.includes(keyword)
+      ) || (incident.resolved_at === null);
+
+      // Determine status and severity
+      let status = 'operational';
+      let severity = 'medium';
+
+      const impact = incident.impact?.toLowerCase() || '';
+      if (impact === 'major' || impact === 'critical' || incidentStatus === 'major_outage') {
+        status = 'outage';
+        severity = 'high';
+      } else if (impact === 'minor' || impact === 'moderate' || incidentStatus === 'investigating') {
+        status = 'degraded';
+        severity = 'medium';
+      } else if (impact === 'maintenance' || text.includes('maintenance')) {
+        status = 'maintenance';
+        severity = 'low';
+      }
+
+      // Only process if there's a clear issue or it's explicitly active
+      if (status === 'operational' && !isActive) {
+        continue;
+      }
 
       // OCI incidents may have components with regions
       const regions = incident.components?.map(comp => {
@@ -361,6 +464,10 @@ async function parseOCIFeed(jsonData, providerId) {
           region_name: REGION_MAPPINGS[providerId]?.[regionId] || regionId,
           service_name: incident.components?.[0]?.name || 'OCI Service',
           status: status,
+          severity: severity,
+          incident_severity: severity, // For database compatibility
+          is_active: isActive,
+          detection_confidence: incidentStatus ? 'high' : 'medium',
           incident_id: incident.id,
           incident_title: incident.name,
           incident_description: incident.incident_updates?.[0]?.body || incident.name,
