@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { supabase } from '../lib/supabase';
 
 interface CleanupResult {
   success: boolean;
@@ -16,6 +16,21 @@ interface CleanupResult {
  * Triggers database cleanup via Supabase Edge Function
  */
 export async function triggerDatabaseCleanup(): Promise<CleanupResult> {
+  if (!supabase) {
+    console.error('Supabase not configured');
+    return {
+      success: false,
+      timestamp: new Date().toISOString(),
+      operationalRemoved: 0,
+      oldIncidentsResolved: 0,
+      duplicatesRemoved: [],
+      archivedOldIncidents: 0,
+      finalRecordCount: 0,
+      estimatedSizeMB: 0,
+      error: 'Supabase not configured'
+    };
+  }
+
   try {
     const { data, error } = await supabase.functions.invoke('database-cleanup', {
       method: 'POST'
