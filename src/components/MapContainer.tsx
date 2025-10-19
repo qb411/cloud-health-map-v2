@@ -12,7 +12,7 @@ import MapController from './MapController';
 import ProviderIconMarker from './ProviderIconMarker';
 import CollapsibleRegionSelector from './CollapsibleRegionSelector';
 const MapContainer = ({ 
-  selectedRegion, 
+  selectedRegion: _selectedRegion, 
   onRegionClick,
   onMapClick 
 }: MapContainerProps) => {
@@ -175,28 +175,7 @@ const MapContainer = ({
         })}
       </LeafletMapContainer>
       
-      {/* Selected Region Display */}
-      {selectedRegion && (
-        <div style={{
-          position: 'absolute',
-          bottom: '80px',
-          left: '20px',
-          zIndex: 10,
-          backgroundColor: theme === 'dark' ? 'rgba(31, 41, 55, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(8px)',
-          borderRadius: '8px',
-          boxShadow: theme === 'dark' 
-            ? '0 10px 15px -3px rgba(0, 0, 0, 0.3)' 
-            : '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-          padding: '12px',
-          border: `1px solid ${theme === 'dark' ? '#374151' : '#e5e7eb'}`,
-          fontSize: '12px',
-          fontWeight: '500',
-          color: theme === 'dark' ? '#60a5fa' : '#2563eb'
-        }}>
-          Selected: {selectedRegion.name}
-        </div>
-      )}
+
 
       {/* Full-screen toggle button */}
       <button

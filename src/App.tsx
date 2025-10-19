@@ -6,7 +6,7 @@ import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import ThemeToggle from './components/ThemeToggle';
 // import AdBanner from './components/AdBanner'; // Commented out - will activate later
 import SupabaseConnectionTest from './components/SupabaseConnectionTest';
-import RegionDetailPanel from './components/RegionDetailPanel';
+import CompactRegionPanel from './components/CompactRegionPanel';
 import { autoCleanupIfNeeded } from './utils/databaseCleanup';
 
 const Dashboard = () => {
@@ -24,6 +24,7 @@ const Dashboard = () => {
   }, []);
 
   const handleRegionClick = (region: CloudRegion) => {
+    console.log('Region clicked:', region);
     setSelectedRegion(region);
     setIsPanelOpen(true);
   };
@@ -187,13 +188,15 @@ const Dashboard = () => {
       {/* Temporary Supabase Connection Test */}
       <SupabaseConnectionTest />
 
-      {/* Region Detail Panel */}
-      <RegionDetailPanel
-        region={selectedRegion || null}
-        isOpen={isPanelOpen}
-        onClose={handlePanelClose}
-        isDarkMode={theme === 'dark'}
-      />
+      {/* Compact Region Detail Panel */}
+      {isPanelOpen && selectedRegion && (
+        <CompactRegionPanel
+          region={selectedRegion}
+          isOpen={isPanelOpen}
+          onClose={handlePanelClose}
+          isDarkMode={theme === 'dark'}
+        />
+      )}
     </div>
   );
 };
