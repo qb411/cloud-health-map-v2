@@ -16,7 +16,14 @@ export default function CompactRegionPanel({ region, isOpen, onClose, isDarkMode
     const [incidents, setIncidents] = useState<CloudStatus[]>([]);
     const [loading, setLoading] = useState(false);
 
-    console.log('CompactRegionPanel render:', { region, isOpen, isDarkMode });
+    console.log('CompactRegionPanel render:', {
+      region: region?.name,
+      isOpen,
+      isDarkMode,
+      isMobile: window.innerWidth < 768,
+      windowWidth: window.innerWidth,
+      userAgent: navigator.userAgent
+    });
 
     // Early return if not open or no region
     if (!isOpen || !region) {
@@ -65,15 +72,19 @@ export default function CompactRegionPanel({ region, isOpen, onClose, isDarkMode
     // Use the exact same colors as the map markers
     const providerColors = PROVIDER_COLORS;
 
-    // Fixed width that doesn't change on resize - set once when panel opens
+    // Responsive width calculation with better mobile support
     const [fixedPanelWidth] = useState(() => {
       try {
         const currentWidth = window.innerWidth;
-        return currentWidth < 640 ? '300px' :
-          currentWidth < 1024 ? '320px' : '360px';
+        // Mobile-first approach
+        if (currentWidth < 480) return '280px'; // Small mobile
+        if (currentWidth < 640) return '300px'; // Mobile
+        if (currentWidth < 768) return '320px'; // Large mobile/small tablet
+        if (currentWidth < 1024) return '340px'; // Tablet
+        return '360px'; // Desktop
       } catch (error) {
         console.error('Error calculating panel width:', error);
-        return '360px'; // fallback
+        return '320px'; // Mobile-friendly fallback
       }
     });
 
@@ -91,28 +102,39 @@ export default function CompactRegionPanel({ region, isOpen, onClose, isDarkMode
             opacity: isOpen ? 1 : 0,
             pointerEvents: isOpen ? 'auto' : 'none',
             transition: 'opacity 250ms ease-out',
-            zIndex: 9998
+            zIndex: 9999, // Higher z-index
+            // Mobile-specific improvements
+            WebkitTapHighlightColor: 'transparent',
+            touchAction: 'none' // Prevent scrolling behind backdrop
           }}
           onClick={onClose}
+          onTouchEnd={onClose} // Add touch support for mobile
         />
 
         {/* Compact Side Panel */}
         <div
           style={{
             position: 'fixed',
-            top: '180px', // Moved down 100px to not cover filter button
-            right: '16px',
-            width: fixedPanelWidth,
-            maxHeight: 'calc(100vh - 200px)', // Adjusted for new position
+            top: window.innerWidth < 768 ? '25vh' : '22vh', // Moved desktop down to clear filter button
+            right: window.innerWidth < 768 ? '8px' : '16px', // Closer to edge on mobile
+            left: window.innerWidth < 768 ? '8px' : 'auto', // Full width on mobile
+            width: window.innerWidth < 768 ? 'auto' : fixedPanelWidth, // Auto width on mobile
+            maxWidth: window.innerWidth < 768 ? 'none' : fixedPanelWidth,
+            maxHeight: window.innerWidth < 768 ? 'calc(100vh - 140px)' : 'calc(100vh - 200px)', // More space on mobile
             backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
             color: isDarkMode ? '#f9fafb' : '#111827',
             borderRadius: '12px',
             boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.1)',
-            transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
+            transform: isOpen ? 'translateX(0)' : `translateX(${window.innerWidth < 768 ? '100%' : '100%'})`,
             transition: 'transform 400ms cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-            zIndex: 9999,
+            zIndex: 10000, // Higher z-index for mobile
             border: `1px solid ${isDarkMode ? '#374151' : '#e5e7eb'}`,
-            overflow: 'hidden'
+            overflow: 'hidden',
+            // Mobile-specific styles
+            WebkitTransform: isOpen ? 'translateX(0)' : 'translateX(100%)', // Safari support
+            WebkitTransition: 'transform 400ms cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+            // Ensure it's above mobile browser UI
+            willChange: 'transform'
           }}
         >
           {/* Compact Header */}
@@ -125,18 +147,27 @@ export default function CompactRegionPanel({ region, isOpen, onClose, isDarkMode
             {/* Close button - positioned absolutely in top-right */}
             <button
               onClick={onClose}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                onClose();
+              }}
               style={{
                 position: 'absolute',
                 top: '8px',
                 right: '8px',
-                padding: '6px',
+                padding: window.innerWidth < 768 ? '8px' : '6px', // Larger touch target on mobile
                 borderRadius: '6px',
                 border: 'none',
                 backgroundColor: 'transparent',
                 color: isDarkMode ? '#9ca3af' : '#6b7280',
                 cursor: 'pointer',
                 transition: 'all 150ms',
-                zIndex: 1
+                zIndex: 1,
+                // Mobile-specific improvements
+                minWidth: window.innerWidth < 768 ? '32px' : 'auto',
+                minHeight: window.innerWidth < 768 ? '32px' : 'auto',
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation'
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = isDarkMode ? '#374151' : '#f3f4f6';
