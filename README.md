@@ -1,6 +1,6 @@
 # Cloud Status Dashboard v2
 
-A production-ready real-time visualization dashboard that displays the health status of cloud provider services across global regions on an interactive world map. The system monitors public status feeds from major cloud providers and displays service health through color-coded regions with historical tracking and trend analysis.
+A development-ready real-time visualization dashboard that displays the health status of cloud provider services across global regions on an interactive world map. The system monitors public status feeds from major cloud providers and displays service health through color-coded regions with historical tracking and trend analysis.
 
 ## 🌐 Live Demo
 
@@ -12,7 +12,7 @@ Experience the interactive cloud status map with real-time data from AWS, Azure,
 
 ### **Interactive Map Dashboard**
 - ✅ **Leaflet-based World Map**: Interactive map with zoom, pan, and region selection
-- ✅ **108+ Global Regions**: Complete coverage across AWS (36), Azure (55), GCP (10), OCI (7)
+- ✅ **176 Global Regions**: Complete coverage across AWS (37), Azure (59), GCP (41), OCI (39)
 - ✅ **Color-coded Status Indicators**: Green (operational), Orange (degraded), Red (outage)
 - ✅ **Provider Icon Markers**: Distinctive markers showing provider abbreviations with status colors
 - ✅ **Real-time Map Controls**: Zoom levels, reset view, fullscreen mode for TV displays
@@ -31,7 +31,7 @@ Experience the interactive cloud status map with real-time data from AWS, Azure,
 - ✅ **Advertisement Banner Integration**: Monetization-ready ad space at bottom
 
 ### **Database & Backend Infrastructure**
-- ✅ **Supabase PostgreSQL Database**: Production-ready schema with historical tracking
+- ✅ **Supabase PostgreSQL Database**: Development-ready schema with historical tracking
 - ✅ **Real-time Data Subscriptions**: Live status updates without page refresh
 - ✅ **Historical Incident Tracking**: Complete audit trail of all status changes
 - ✅ **Automated Region Summaries**: Database functions for status aggregation
@@ -66,7 +66,7 @@ Experience the interactive cloud status map with real-time data from AWS, Azure,
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| **Frontend Map** | ✅ Complete | Interactive Leaflet map with 108+ regions |
+| **Frontend Map** | ✅ Complete | Interactive Leaflet map with 176 regions |
 | **Database Schema** | ✅ Complete | Supabase with historical tracking |
 | **RSS Processor** | ✅ Complete | All 4 providers tested and working |
 | **UI/UX Design** | ✅ Complete | Dark/light themes, responsive design |
@@ -99,7 +99,7 @@ Experience the interactive cloud status map with real-time data from AWS, Azure,
 ```
 
 ### **Technology Stack**
-- **Frontend**: React 18 + TypeScript + Vite + Leaflet + Tailwind CSS
+- **Frontend**: React 19 + TypeScript + Vite + Leaflet + Tailwind CSS
 - **Database**: Supabase PostgreSQL with real-time subscriptions
 - **Backend**: Node.js RSS processor (GitHub Actions)
 - **Deployment**: GitHub Pages with automated CI/CD
@@ -108,16 +108,16 @@ Experience the interactive cloud status map with real-time data from AWS, Azure,
 ## Technology Stack
 
 ### Frontend Dependencies
-- **React 18.2.0** + **TypeScript 5.2.2** + **Vite 5.4.1**
-- **Leaflet 1.9.4** + **React-Leaflet 4.2.1** (Interactive mapping)
-- **Tailwind CSS 3.4.1** (Responsive styling)
-- **@supabase/supabase-js 2.39.0** (Database client)
+- **React 19.1.1** + **TypeScript 5.8.3** + **Vite 7.1.7**
+- **Leaflet 1.9.4** + **React-Leaflet 5.0.0** (Interactive mapping)
+- **Tailwind CSS 4.1.13** (Responsive styling)
+- **@supabase/supabase-js 2.58.0** (Database client)
 
 ### Backend Dependencies (RSS Processor)
 - **Node.js 18+** (GitHub Actions runtime)
 - **xml2js 0.6.2** (AWS/Azure RSS parsing)
 - **node-fetch 3.3.2** (HTTP requests)
-- **dotenv 16.3.1** (Environment variables)
+- **dotenv 17.2.3** (Environment variables)
 
 ### Infrastructure
 - **Database**: Supabase PostgreSQL (Free tier: 500MB)
@@ -173,6 +173,7 @@ npm install
    - Check Tables: `cloud_status`, `region_status_current` should exist
    - Sample data should be visible in Table Editor
    - Connection test should show green status in app
+   - Verify 176 regions are loaded across all providers
 
 ### 3. GitHub Repository Setup
 1. **Fork or clone this repository**
@@ -227,7 +228,7 @@ npm run dev
    - ✅ Green Supabase logo in bottom-left corner
    - ✅ "Connected Successfully!" when expanded
    - ✅ Sample data from all 4 cloud providers visible
-   - ✅ Map displays 108+ regions with provider filtering
+   - ✅ Map displays 176 regions with provider filtering
 
 ## Data Sources
 
